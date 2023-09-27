@@ -1,0 +1,2 @@
+# exclude sensitive config data
+config.json
