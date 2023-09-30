@@ -3,7 +3,6 @@ import json
 import argparse
 from pathlib import Path
 from shutil import copy2
-import os
 
 
 class CleanedCode:
@@ -53,7 +52,7 @@ def parse_args():
     parser.version = '0.1'
 
     parser.add_argument('-e','--encoding', choices=('ascii', 'utf-7', 'utf-8', 'utf-16', 'utf-32'), default='utf-8')
-    parser.add_argument('-cd','--copy_data', action='store_true', default=False)
+    parser.add_argument('-p','--preserve', action='store_true', default=False)
     
     input_group = parser.add_mutually_exclusive_group(required=True)
     input_group.add_argument('-f', '--file', action='store')
@@ -93,23 +92,22 @@ def main():
 
     INPUT_PATH = Path(ARGS['file']).parent  if ARGS['file'] != None  else Path(ARGS['dir']) 
     INPUT_PATH = INPUT_PATH.absolute()
-    OUTPUT_PATH = Path(ARGS['out'])  if ARGS['out'] != None  else (INPUT_PATH / 'clean_code')
+    OUTPUT_PATH = Path(ARGS['out'])  if ARGS['out'] != None  else (INPUT_PATH.parent / 'clean_code')
     
     cleanedFiles = []
     copiedFiles = []
-    
+
     # Cleaning code files, marking others for copy
-    if ARGS['file'] == None:
-        for entry in Path(INPUT_PATH).glob('**/*'):
+    for entry in Path(INPUT_PATH).glob('**/*'):
+        
+        if entry.is_file():
+            if entry.suffix.lower() in LANGUAGE_EXTENSIONS and (ARGS['file'] == None or Path(ARGS['file']).samefile(entry)):
             
-            if entry.is_file() and entry.suffix.lower() in LANGUAGE_EXTENSIONS:
-                cleanedFiles.append(clean_file(entry, INPUT_PATH, ARGS['encoding']))
+                file = entry  if ARGS['file'] == None  else (INPUT_PATH / Path(ARGS['file']).name) 
+                cleanedFiles.append(clean_file(file, INPUT_PATH, ARGS['encoding']))
             
-            elif entry.is_file() and ARGS['copy_data']:
-                copiedFiles.append(entry)
-                
-    else:
-        cleanedFiles.append(clean_file(Path(INPUT_PATH) / Path(ARGS['file']).name, INPUT_PATH, ARGS['encoding']))
+            elif ARGS['preserve']:
+                copiedFiles.append(entry)       
     
     # Handling output directory
     if Path(OUTPUT_PATH).exists():
@@ -134,9 +132,16 @@ def main():
         (dir / cleanedFile.filename).write_text(clean_code, encoding=ARGS['encoding'])
         
     # Copying marked files
-    if ARGS['copy_data']:
-        for copiedFile in copiedFiles:
-            copy2(copiedFile, OUTPUT_PATH)
+    if ARGS['preserve']:
+        
+        for copiedFile in copiedFiles:   
+            dir = copiedFile.relative_to(INPUT_PATH).parent
+            dir = OUTPUT_PATH / dir 
+            
+            if not dir.exists():
+                dir.mkdir(parents=True)
+            
+            copy2(copiedFile, dir / copiedFile.name)
         
 
 if __name__ == "__main__":

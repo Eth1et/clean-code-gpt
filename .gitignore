@@ -1,4 +1,3 @@
 # exclude sensitive config data
+test*
 config.json
-test
-test_clean
