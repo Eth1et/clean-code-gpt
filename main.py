@@ -3,6 +3,7 @@ import json
 import argparse
 from pathlib import Path
 from shutil import copy2
+import asyncio
 
 
 class CleanedCode:
@@ -37,7 +38,7 @@ def apply_config():
         CONFIG = json.load(cfg)
         openai.api_key = CONFIG['api_key']
         openai.organization = CONFIG['organization']
-        return CONFIG['model']
+        return CONFIG['model'], CONFIG['instruction']
 
 
 def get_extensions():
@@ -65,28 +66,39 @@ def parse_args():
     return vars(parser.parse_args())
 
 
-def clean_file(file_path, input_path, encoding):
+async def chat_completion(code, model, instruction):
+    response = await openai.ChatCompletion.create(
+        model=model,
+        messages=[
+        {"role": "system", "content": instruction},
+        {"role": "user", "content": code},
+    ])
+    
+    print(response)
+    
+    return response['choices'][0]['message']['content']
+
+
+async def clean_file(file_path, input_path, encoding, model, instruction):
     
     with file_path.open('r', encoding=encoding) as file:
         code = ''.join(file.readline())
         
         ## TODO: handle too large input
         
-        ## TODO: handle API exception
-        
-        ## TODO: call API
+        clean_code = chat_completion(code, model, instruction)
         
         cleanedFile = CleanedFile(
-            [CleanedCode(code, "problem solved kekw")], 
+            [CleanedCode(code, clean_code)], 
             file_path.name, 
             file_path.relative_to(input_path).parent)
         
         return cleanedFile
 
 
-def main():
+async def main():
     
-    MODEL = apply_config()
+    MODEL, INSTRUCTION = apply_config()
     ARGS = parse_args()
     LANGUAGE_EXTENSIONS = get_extensions()
 
@@ -104,7 +116,7 @@ def main():
             if entry.suffix.lower() in LANGUAGE_EXTENSIONS and (ARGS['file'] == None or Path(ARGS['file']).samefile(entry)):
             
                 file = entry  if ARGS['file'] == None  else (INPUT_PATH / Path(ARGS['file']).name) 
-                cleanedFiles.append(clean_file(file, INPUT_PATH, ARGS['encoding']))
+                cleanedFiles.append(clean_file(file, INPUT_PATH, ARGS['encoding'], MODEL, INSTRUCTION))
             
             elif ARGS['preserve']:
                 copiedFiles.append(entry)       
@@ -147,7 +159,7 @@ def main():
 if __name__ == "__main__":
     
     try:
-        main()
+        asyncio.run(main())
     except Exception as e:
         print(e)
 
