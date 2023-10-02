@@ -3,7 +3,6 @@ import json
 import argparse
 from pathlib import Path
 from shutil import copy2
-import asyncio
 
 
 class CleanedCode:
