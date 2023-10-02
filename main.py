@@ -66,8 +66,8 @@ def parse_args():
     return vars(parser.parse_args())
 
 
-async def chat_completion(code, model, instruction):
-    response = await openai.ChatCompletion.create(
+def chat_completion(code, model, instruction):
+    response = openai.ChatCompletion.create(
         model=model,
         messages=[
         {"role": "system", "content": instruction},
@@ -79,7 +79,7 @@ async def chat_completion(code, model, instruction):
     return response['choices'][0]['message']['content']
 
 
-async def clean_file(file_path, input_path, encoding, model, instruction):
+def clean_file(file_path, input_path, encoding, model, instruction):
     
     with file_path.open('r', encoding=encoding) as file:
         code = ''.join(file.readline())
@@ -96,7 +96,7 @@ async def clean_file(file_path, input_path, encoding, model, instruction):
         return cleanedFile
 
 
-async def main():
+def main():
     
     MODEL, INSTRUCTION = apply_config()
     ARGS = parse_args()
@@ -159,7 +159,7 @@ async def main():
 if __name__ == "__main__":
     
     try:
-        asyncio.run(main())
+        main()
     except Exception as e:
         print(e)
 
