@@ -2,5 +2,6 @@
     "api_key" : "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",
     "organization" : "org-LeQ85KBOcPjhBjdwGjk5AslR",
     "model" : "gpt-3.5-turbo",
+    "rpm" : 3,
     "instruction" : "Your task is to help developers by making their code: easy to understand, maintainable! You achieve this by making their code follow clean code principles! It is important you do not change any of the code's functionality! The response must only contain the code, and nothing else!"
 }
