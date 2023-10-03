@@ -68,6 +68,13 @@ def parse_args():
     ARGS = vars(parser.parse_args())
 
 
+def create_messages(code_fragment):
+    return [
+        {"role" : "system", "content" : INSTRUCTION},
+        {"role" : "user", "content" : code_fragment}
+    ]
+
+
 def chat_completion(messages):
     response = openai.ChatCompletion.create(
         model=MODEL,
@@ -77,34 +84,37 @@ def chat_completion(messages):
     return response['choices'][0]['message']['content']
 
 
+def count_tokens(messages):
+    num_tokens = 3
+    
+    for message in messages:
+        num_tokens += 3
+        for key, value in message.items():
+            num_tokens += len(ENCODER.encode(value))
+            if key == "name":
+                num_tokens += 1
+                
+    return num_tokens
+
+
 def clean_file(file_path, encoding):
     
     with file_path.open('r', encoding=encoding) as file:
+        cleanedFile = CleanedFile([], file_path.name, file_path.relative_to(INPUT_PATH).parent)
+        
         code = ''.join(file.readlines())
-        
-        messages = [
-            {"role" : "system", "content" : INSTRUCTION},
-            {"role" : "user", "content" : code}
-        ]
-
-        num_tokens = 3
-        for message in messages:
-            num_tokens += 3
-            for key, value in message.items():
-                num_tokens += len(ENCODER.encode(value))
-                if key == "name":
-                    num_tokens += 1
-                    
+        num_tokens = count_tokens(create_messages(code))
         print(num_tokens)
+        
         ## TODO: handle too large input
+        fragments = [code]
         
-        clean_code = chat_completion(messages)
+        for fragment in fragments:
+            cleanedFile.fragments.append(CleanedCode(code, "==UNFINISHED=="))
         
-        cleanedFile = CleanedFile(
-            [CleanedCode(code, clean_code)], 
-            file_path.name, 
-            file_path.relative_to(INPUT_PATH).parent)
-        
+        for fragment in cleanedFile.fragments:
+            fragment.clean = chat_completion(create_messages(fragment))
+            
         return cleanedFile
 
 
