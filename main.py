@@ -6,7 +6,9 @@ from shutil import copy2
 import tiktoken
 
 
-MODEL = ""
+MODELS = {}
+MODEL = {}
+DEFAULT_MODEL_NAME = ""
 INSTRUCTION = ""
 ARGS = {}
 LANGUAGE_EXTENSIONS = []
@@ -29,16 +31,23 @@ class CleanedFile:
     
 
 def apply_config():
-    global MODEL, INSTRUCTION
+    global INSTRUCTION, DEFAULT_MODEL_NAME
     
     with open("config.json") as cfg:
         CONFIG = json.load(cfg)
         openai.api_key = CONFIG['api_key']
         openai.organization = CONFIG['organization']
-        MODEL, INSTRUCTION = CONFIG['model'], CONFIG['instruction']
+        DEFAULT_MODEL_NAME, INSTRUCTION = CONFIG['default_model'], CONFIG['instruction']
 
 
-def set_extensions():
+def load_models():
+    global MODELS
+    
+    with open('models.json', 'r') as models:
+        MODELS = json.load(models)
+
+
+def load_extensions():
     global LANGUAGE_EXTENSIONS
     
     with open('language_extensions.json', 'r') as extensions:
@@ -52,6 +61,7 @@ def parse_args():
     parser.version = '0.1'
 
     parser.add_argument('-e','--encoding', choices=('ascii', 'utf-7', 'utf-8', 'utf-16', 'utf-32'), default='utf-8')
+    parser.add_argument('-m','--model', choices=MODELS.keys(), default=DEFAULT_MODEL_NAME)
     
     input_group = parser.add_mutually_exclusive_group(required=True)
     input_group.add_argument('-f', '--file', action='store')
@@ -77,7 +87,7 @@ def create_messages(code_fragment):
 
 def chat_completion(messages):
     response = openai.ChatCompletion.create(
-        model=MODEL,
+        model=MODEL['name'],
         messages=messages
     )
     
@@ -165,9 +175,11 @@ def main():
     global INPUT_PATH, OUTPUT_PATH, ENCODER
     
     apply_config()
+    load_models()
     parse_args()
-    set_extensions()
+    load_extensions()
     
+    MODEL = MODELS[ARGS['model']]
     ENCODER = tiktoken.encoding_for_model(MODEL)
     INPUT_PATH = Path(ARGS['file']).parent  if ARGS['file'] != None  else Path(ARGS['dir']) 
     INPUT_PATH = INPUT_PATH.absolute()
