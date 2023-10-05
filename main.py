@@ -61,8 +61,9 @@ def parse_args():
     parser.version = '0.1'
 
     parser.add_argument('-e','--encoding', choices=('ascii', 'utf-7', 'utf-8', 'utf-16', 'utf-32'), default='utf-8')
-    parser.add_argument('-m','--model', choices=MODELS.keys(), default=DEFAULT_MODEL_NAME)
-    
+    parser.add_argument('-m','--model', choices=tuple(MODELS.keys()), default=DEFAULT_MODEL_NAME)
+    parser.add_argument('-p','--preserve', action='store_true', default=False)
+
     input_group = parser.add_mutually_exclusive_group(required=True)
     input_group.add_argument('-f', '--file', action='store')
     input_group.add_argument('-d','--dir', action='store')
@@ -70,13 +71,14 @@ def parse_args():
     output_group = parser.add_mutually_exclusive_group()
     output_group.add_argument('-c','--console', action='store_true')
     output_group.add_argument('-o','--out', action='store')
-    
-    preserve_group = parser.add_mutually_exclusive_group()
-    preserve_group.add_argument('-p','--preserve', action='store_true', default=False)
-    preserve_group.add_argument('-c','--console', action='store_true')
-    
+
     ARGS = vars(parser.parse_args())
 
+    if ARGS['console'] and ARGS['preserve']:
+        print("Cannot print preserved data to console.")
+        print("Do not use (-c|--console) and (-p|--preserve) at the same time!")
+        end_run()
+    
 
 def create_messages(code_fragment):
     return [
@@ -90,7 +92,7 @@ def chat_completion(messages):
         model=MODEL['name'],
         messages=messages
     )
-    
+
     return response['choices'][0]['message']['content']
 
 
@@ -120,10 +122,7 @@ def clean_file(file_path, encoding):
         fragments = [code]
         
         for fragment in fragments:
-            cleanedFile.fragments.append(CleanedCode(code, "==UNFINISHED=="))
-        
-        for fragment in cleanedFile.fragments:
-            fragment.clean = chat_completion(create_messages(fragment))
+            cleanedFile.fragments.append(CleanedCode(fragment, chat_completion(create_messages(fragment)))) 
             
         return cleanedFile
 
@@ -131,7 +130,7 @@ def clean_file(file_path, encoding):
 def clean_files(cleanedFiles, copiedFiles):
     for entry in Path(INPUT_PATH).glob('**/*'):    
         if entry.is_file():
-            if entry.suffix.lower() in LANGUAGE_EXTENSIONS and (ARGS['file'] == None or Path(ARGS['file']).samefile(entry)):
+            if entry.suffix.lower() in LANGUAGE_EXTENSIONS and (ARGS['file'] is None or Path(ARGS['file']).samefile(entry)):
             
                 file = entry  if ARGS['file'] is None  else (INPUT_PATH / Path(ARGS['file']).name) 
                 cleanedFiles.append(clean_file(file, ARGS['encoding']))
@@ -172,15 +171,15 @@ def write_output(cleanedFiles):
 
 
 def main():
-    global INPUT_PATH, OUTPUT_PATH, ENCODER
+    global INPUT_PATH, OUTPUT_PATH, ENCODER, MODEL
     
     apply_config()
     load_models()
     parse_args()
     load_extensions()
-    
+
     MODEL = MODELS[ARGS['model']]
-    ENCODER = tiktoken.encoding_for_model(MODEL)
+    ENCODER = tiktoken.encoding_for_model(MODEL['name'])
     INPUT_PATH = Path(ARGS['file']).parent  if ARGS['file'] != None  else Path(ARGS['dir']) 
     INPUT_PATH = INPUT_PATH.absolute()
     OUTPUT_PATH = Path(ARGS['out'])  if ARGS['out'] != None  else (INPUT_PATH.parent / 'clean_code')
@@ -195,10 +194,15 @@ def main():
     else:
         Path(OUTPUT_PATH).mkdir(parents=True)
 
-    clean_files(cleanedFiles, copiedFiles)       
+    clean_files(cleanedFiles, copiedFiles)
     write_output(cleanedFiles)
     copy_preserved(copiedFiles)
         
+
+def end_run():
+    input("Press Enter to quit!")
+    quit()
+
 
 if __name__ == "__main__":
     try:
@@ -206,4 +210,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
         
-    input("Press Enter to quit!")
+    end_run()
