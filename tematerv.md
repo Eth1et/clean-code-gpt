@@ -1,28 +1,17 @@
 # Tématerv - Bódi Martin
 
   
-  
-  
 
 ## Személyes adatok
 
-  
 
 **Név:** Bódi Martin
 
-  
-
 **Neptun:** Z9WTNS
-
-  
 
 **E-mail:** h150714@stud.u-szeged.hu
 
-  
-
 **Szak:** Programtervező Informatikus BSc nappali
-
-  
 
 **Végzés várható ideje:** 2024. nyár
 
@@ -69,7 +58,6 @@ Nehézségek:
 
 
 ## Tervezett ütemezés
-
 
 
 -  **2021. szeptember:**
