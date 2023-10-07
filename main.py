@@ -187,12 +187,13 @@ def main():
     cleanedFiles = []
     copiedFiles = []
 
-    if Path(OUTPUT_PATH).exists():    
-        if any(Path(OUTPUT_PATH).iterdir()):
-            print(f"[ERROR] The output directory is not empty! ( {OUTPUT_PATH} )")
-            return
-    else:
-        Path(OUTPUT_PATH).mkdir(parents=True)
+    if ARGS['console']:
+        if Path(OUTPUT_PATH).exists():    
+            if any(Path(OUTPUT_PATH).iterdir()):
+                print(f"[ERROR] The output directory is not empty! ( {OUTPUT_PATH} )")
+                return
+        else:
+            Path(OUTPUT_PATH).mkdir(parents=True)
 
     clean_files(cleanedFiles, copiedFiles)
     write_output(cleanedFiles)
