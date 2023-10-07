@@ -6,6 +6,7 @@ from shutil import copy2
 import tiktoken
 from tqdm import tqdm
 from tenacity import retry, wait_random_exponential, stop_after_attempt
+import math
 
 
 MODELS = {}
@@ -139,8 +140,8 @@ def clean_fragments(cleaned_file, fragments, input_tokens, output_tokens):
         cleaned_file.fragments.append(CleanedCode(fragment, clean))
         output_tokens += len(ENCODER.encode(clean))
     
-    input_price = input_tokens // 1000 * MODEL['input_price']
-    output_price = output_tokens // 1000 * MODEL['output_price']
+    input_price = math.ceil(input_tokens / 1000) * MODEL['input_price']
+    output_price = math.ceil(output_tokens / 1000) * MODEL['output_price']
     TOTAL_COST += input_price + output_price
     
     print(f"[Cleaned {cleaned_file.filename} for ~${input_price + output_price}]")
