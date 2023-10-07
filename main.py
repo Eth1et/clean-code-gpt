@@ -4,6 +4,8 @@ import argparse
 from pathlib import Path
 from shutil import copy2
 import tiktoken
+from tqdm import tqdm
+from tenacity import retry, wait_random_exponential, stop_after_attempt
 
 
 MODELS = {}
@@ -15,6 +17,7 @@ LANGUAGE_EXTENSIONS = []
 ENCODER = None
 INPUT_PATH = ""
 OUTPUT_PATH = ""
+TOTAL_COST = 0
 
 
 class CleanedCode:
@@ -87,6 +90,7 @@ def create_messages(code_fragment):
     ]
 
 
+@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), reraise=True)
 def chat_completion(messages):
     response = openai.ChatCompletion.create(
         model=MODEL['name'],
@@ -109,40 +113,75 @@ def count_tokens(messages):
     return num_tokens
 
 
+def fragmentize_code(code, input_tokens):
+    if input_tokens > MODEL['max_tokens']:  ## Only placeholder, logic will be implemented later
+            print(f'[ERROR] Too large imput file: {input_tokens} (max:{MODEL["max_tokens"]})')
+            return []
+        
+    return [code]
+
+
+def clean_fragments(cleaned_file, fragments, input_tokens, output_tokens):
+    global TOTAL_COST
+    
+    print(f"[Cleaning {cleaned_file.filename}]")
+    
+    for fragment in tqdm(fragments, desc="Processing Fragments"):
+        clean = ""
+        
+        try:
+            clean = chat_completion(create_messages(fragment))
+        except Exception as e:
+            print("[ERROR] Couldn't finish cleaning file, because of an error:")
+            print(e)
+            break
+        
+        cleaned_file.fragments.append(CleanedCode(fragment, clean))
+        output_tokens += len(ENCODER.encode(clean))
+    
+    input_price = input_tokens // 1000 * MODEL['input_price']
+    output_price = output_tokens // 1000 * MODEL['output_price']
+    TOTAL_COST += input_price + output_price
+    
+    print(f"[Cleaned {cleaned_file.filename} for ~${input_price + output_price}]")
+
+
 def clean_file(file_path, encoding):
     
     with file_path.open('r', encoding=encoding) as file:
-        cleanedFile = CleanedFile([], file_path.name, file_path.relative_to(INPUT_PATH).parent)
+        cleaned_file = CleanedFile([], file_path.name, file_path.relative_to(INPUT_PATH).parent)
         
         code = ''.join(file.readlines())
-        num_tokens = count_tokens(create_messages(code))
-        print(num_tokens)
         
-        ## TODO: handle too large input
-        fragments = [code]
+        input_tokens = count_tokens(create_messages(code))
+        output_tokens = 3
+
+        fragments = fragmentize_code(code, input_tokens)
+
+        if len(fragments) == 0:
+            return cleaned_file
         
-        for fragment in fragments:
-            cleanedFile.fragments.append(CleanedCode(fragment, chat_completion(create_messages(fragment)))) 
-            
-        return cleanedFile
+        clean_fragments(cleaned_file, fragments, input_tokens, output_tokens)
+        
+        return cleaned_file
 
 
-def clean_files(cleanedFiles, copiedFiles):
+def clean_files(cleaned_files, copied_files):
     for entry in Path(INPUT_PATH).glob('**/*'):    
         if entry.is_file():
             if entry.suffix.lower() in LANGUAGE_EXTENSIONS and (ARGS['file'] is None or Path(ARGS['file']).samefile(entry)):
             
                 file = entry  if ARGS['file'] is None  else (INPUT_PATH / Path(ARGS['file']).name) 
-                cleanedFiles.append(clean_file(file, ARGS['encoding']))
+                cleaned_files.append(clean_file(file, ARGS['encoding']))
 
             elif ARGS['preserve']:
-                copiedFiles.append(entry)
+                copied_files.append(entry)
 
 
-def copy_preserved(copiedFiles):
+def copy_preserved(copied_files):
     if ARGS['preserve']:
         
-        for copiedFile in copiedFiles:   
+        for copiedFile in copied_files:   
             dir = copiedFile.relative_to(INPUT_PATH).parent
             dir = OUTPUT_PATH / dir 
             
@@ -152,22 +191,22 @@ def copy_preserved(copiedFiles):
             copy2(copiedFile, dir / copiedFile.name)
 
 
-def write_output(cleanedFiles):
-    for cleanedFile in cleanedFiles:
+def write_output(cleaned_files):
+    for cleaned_file in cleaned_files:
         clean_code = ""
         
-        for fragment in cleanedFile.fragments:
+        for fragment in cleaned_file.fragments:
             clean_code = clean_code + fragment.clean
         
         if ARGS['console']:
-            path = Path(cleanedFile.dirname) / cleanedFile.filename
+            path = Path(cleaned_file.dirname) / cleaned_file.filename
             print(f"\n\n{'='*15} START OF <{path}>{'='*15}\n{clean_code}\n{'='*15} END OF <{path}>;{'='*15}\n\n")
         else:
-            dir = Path(OUTPUT_PATH) / cleanedFile.dirname
+            dir = Path(OUTPUT_PATH) / cleaned_file.dirname
             if not dir.exists():
                 dir.mkdir(parents=True)
 
-            (dir / cleanedFile.filename).write_text(clean_code, encoding=ARGS['encoding'])
+            (dir / cleaned_file.filename).write_text(clean_code, encoding=ARGS['encoding'])
 
 
 def main():
@@ -184,8 +223,8 @@ def main():
     INPUT_PATH = INPUT_PATH.absolute()
     OUTPUT_PATH = Path(ARGS['out'])  if ARGS['out'] != None  else (INPUT_PATH.parent / 'clean_code')
     
-    cleanedFiles = []
-    copiedFiles = []
+    cleaned_files = []
+    copied_files = []
 
     if ARGS['console']:
         if Path(OUTPUT_PATH).exists():    
@@ -195,13 +234,13 @@ def main():
         else:
             Path(OUTPUT_PATH).mkdir(parents=True)
 
-    clean_files(cleanedFiles, copiedFiles)
-    write_output(cleanedFiles)
-    copy_preserved(copiedFiles)
+    clean_files(cleaned_files, copied_files)
+    write_output(cleaned_files)
+    copy_preserved(copied_files)
         
 
 def end_run():
-    input("Press Enter to quit!")
+    input(f"[Finished cleaning all the files | Total Cost: ~${TOTAL_COST}]")
     quit()
 
 
