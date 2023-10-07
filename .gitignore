@@ -1,3 +1,4 @@
 # exclude sensitive config data
 test*
 config.json
+.vscode
