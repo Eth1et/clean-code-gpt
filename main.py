@@ -67,19 +67,28 @@ def parse_args():
     parser.add_argument('-e','--encoding', choices=('ascii', 'utf-7', 'utf-8', 'utf-16', 'utf-32'), default='utf-8')
     parser.add_argument('-m','--model', choices=tuple(MODELS.keys()), default=DEFAULT_MODEL_NAME)
     parser.add_argument('-p','--preserve', action='store_true', default=False)
+    parser.add_argument('-c','--console', action='store_true', default=False)
 
     input_group = parser.add_mutually_exclusive_group(required=True)
     input_group.add_argument('-f', '--file', action='store')
     input_group.add_argument('-d','--dir', action='store')
     
     output_group = parser.add_mutually_exclusive_group()
-    output_group.add_argument('-c','--console', action='store_true')
+    output_group.add_argument('-co','--console_only', action='store_true')
     output_group.add_argument('-o','--out', action='store')
 
     ARGS = vars(parser.parse_args())
 
-    if ARGS['console'] and ARGS['preserve']:
+    if ARGS['console_only'] and ARGS['preserve']:
         print("Cannot print preserved data to console.")
+        print("Do not use (-c|--console) and (-p|--preserve) at the same time!")
+        end_run()
+    
+    if ARGS['console'] and ARGS['console_only']:
+        print("Do not use (-c|--console) and (-co|--console_only) at the same time!")
+        end_run()
+    
+    if ARGS['out'] and ARGS['console_only']:
         print("Do not use (-c|--console) and (-p|--preserve) at the same time!")
         end_run()
     
@@ -199,10 +208,11 @@ def write_output(cleaned_files):
         for fragment in cleaned_file.fragments:
             clean_code = clean_code + fragment.clean
         
-        if ARGS['console']:
+        if ARGS['console'] or ARGS['console_only']:
             path = Path(cleaned_file.dirname) / cleaned_file.filename
             print(f"\n\n{'='*15} START OF <{path}>{'='*15}\n{clean_code}\n{'='*15} END OF <{path}>;{'='*15}\n\n")
-        else:
+        
+        if not ARGS['console_only']:
             dir = Path(OUTPUT_PATH) / cleaned_file.dirname
             if not dir.exists():
                 dir.mkdir(parents=True)
@@ -227,7 +237,7 @@ def main():
     cleaned_files = []
     copied_files = []
 
-    if ARGS['console']:
+    if not ARGS['console_only']:
         if Path(OUTPUT_PATH).exists():    
             if any(Path(OUTPUT_PATH).iterdir()):
                 print(f"[ERROR] The output directory is not empty! ( {OUTPUT_PATH} )")
