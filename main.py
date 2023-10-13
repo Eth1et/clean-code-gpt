@@ -32,7 +32,7 @@ class CleanedFile:
         self.fragments = fragments
         self.filename = filename
         self.dirname = dirname
-    
+
 
 def apply_config():
     global INSTRUCTION, DEFAULT_MODEL_NAME
