@@ -1,2 +1,2 @@
 ﻿# clean-code-gpt
-![image](./logo.jpg)
+![image](./logo.JPG)
