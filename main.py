@@ -137,13 +137,11 @@ def clean_fragments(cleaned_file, fragments, input_tokens, output_tokens):
     print(f"[Cleaning {cleaned_file.filename}]")
     
     for fragment in tqdm(fragments, desc="Processing Fragments"):
-        clean = ""
-        
         try:
             clean = chat_completion(create_messages(fragment))
-        except Exception as e:
+        except Exception as exception:
             print("[ERROR] Couldn't finish cleaning file, because of an error:")
-            print(e)
+            print(exception)
             break
         
         cleaned_file.fragments.append(CleanedCode(fragment, clean))
@@ -251,7 +249,7 @@ def main():
         
 
 def end_run():
-    input(f"[Finished cleaning all the files | Total Cost: ~${TOTAL_COST}]")
+    print(f"[Finished cleaning all the files | Total Cost: ~${TOTAL_COST}]")
     quit()
 
 
