@@ -38,10 +38,10 @@ def apply_config():
     global INSTRUCTION, DEFAULT_MODEL_NAME
     
     with open("config.json") as cfg:
-        CONFIG = json.load(cfg)
-        openai.api_key = CONFIG['api_key']
-        openai.organization = CONFIG['organization']
-        DEFAULT_MODEL_NAME, INSTRUCTION = CONFIG['default_model'], CONFIG['instruction']
+        config = json.load(cfg)
+        openai.api_key = config['api_key']
+        openai.organization = config['organization']
+        DEFAULT_MODEL_NAME, INSTRUCTION = config['default_model'], config['instruction']
 
 
 def load_models():
@@ -64,18 +64,18 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.version = '0.1'
 
-    parser.add_argument('-e','--encoding', choices=('ascii', 'utf-7', 'utf-8', 'utf-16', 'utf-32'), default='utf-8')
-    parser.add_argument('-m','--model', choices=tuple(MODELS.keys()), default=DEFAULT_MODEL_NAME)
-    parser.add_argument('-p','--preserve', action='store_true', default=False)
-    parser.add_argument('-c','--console', action='store_true', default=False)
+    parser.add_argument('-e', '--encoding', choices=('ascii', 'utf-7', 'utf-8', 'utf-16', 'utf-32'), default='utf-8')
+    parser.add_argument('-m', '--model', choices=tuple(MODELS.keys()), default=DEFAULT_MODEL_NAME)
+    parser.add_argument('-p', '--preserve', action='store_true', default=False)
+    parser.add_argument('-c', '--console', action='store_true', default=False)
 
     input_group = parser.add_mutually_exclusive_group(required=True)
     input_group.add_argument('-f', '--file', action='store')
-    input_group.add_argument('-d','--dir', action='store')
+    input_group.add_argument('-d', '--dir', action='store')
     
     output_group = parser.add_mutually_exclusive_group()
-    output_group.add_argument('-co','--console_only', action='store_true')
-    output_group.add_argument('-o','--out', action='store')
+    output_group.add_argument('-co', '--console_only', action='store_true')
+    output_group.add_argument('-o', '--out', action='store')
 
     ARGS = vars(parser.parse_args())
 
@@ -95,8 +95,8 @@ def parse_args():
 
 def create_messages(code_fragment):
     return [
-        {"role" : "system", "content" : INSTRUCTION},
-        {"role" : "user", "content" : code_fragment}
+        {"role" : "system", "content": INSTRUCTION},
+        {"role" : "user", "content": code_fragment}
     ]
 
 
@@ -125,8 +125,8 @@ def count_tokens(messages):
 
 def fragmentize_code(code, input_tokens):
     if input_tokens > MODEL['max_tokens']:  ## Only placeholder, logic will be implemented later
-            print(f'[ERROR] Too large imput file: {input_tokens} (max:{MODEL["max_tokens"]})')
-            return []
+        print(f'[ERROR] Too large imput file: {input_tokens} (max: {MODEL["max_tokens"]})')
+        return []
         
     return [code]
 
@@ -181,7 +181,7 @@ def clean_files(cleaned_files, copied_files):
         if entry.is_file():
             if entry.suffix.lower() in LANGUAGE_EXTENSIONS and (ARGS['file'] is None or Path(ARGS['file']).samefile(entry)):
             
-                file = entry  if ARGS['file'] is None  else (INPUT_PATH / Path(ARGS['file']).name) 
+                file = entry if ARGS['file'] is None else (INPUT_PATH / Path(ARGS['file']).name) 
                 cleaned_files.append(clean_file(file, ARGS['encoding']))
 
             elif ARGS['preserve']:
@@ -230,9 +230,9 @@ def main():
 
     MODEL = MODELS[ARGS['model']]
     ENCODER = tiktoken.encoding_for_model(MODEL['name'])
-    INPUT_PATH = Path(ARGS['file']).parent  if ARGS['file'] != None  else Path(ARGS['dir']) 
+    INPUT_PATH = Path(ARGS['dir']  if ARGS['file'] is None else Path(ARGS['file']).parent) 
     INPUT_PATH = INPUT_PATH.absolute()
-    OUTPUT_PATH = Path(ARGS['out'])  if ARGS['out'] != None  else (INPUT_PATH.parent / 'clean_code')
+    OUTPUT_PATH = (INPUT_PATH.parent / 'clean_code') if ARGS['out'] is None else Path(ARGS['out'])
     
     cleaned_files = []
     copied_files = []
