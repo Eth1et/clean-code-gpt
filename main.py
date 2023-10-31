@@ -236,11 +236,7 @@ def main():
     copied_files = []
 
     if not ARGS['console_only']:
-        if Path(OUTPUT_PATH).exists():    
-            if any(Path(OUTPUT_PATH).iterdir()):
-                print(f"[ERROR] The output directory is not empty! ( {OUTPUT_PATH} )")
-                return
-        else:
+        if not Path(OUTPUT_PATH).exists():
             Path(OUTPUT_PATH).mkdir(parents=True)
 
     clean_files(cleaned_files, copied_files)
