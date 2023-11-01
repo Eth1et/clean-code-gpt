@@ -2,22 +2,7 @@ version: "1.0"
 linter: jetbrains/qodana-jvm:latest
 projectJDK: 11
 profile:
-  name: qodana.recommended.all
-exclude:
-  - name: All
-    paths:
-      - node_modules/
-      - common/node_modules/
-      - scan/node_modules/
-      - vsts/node_modules/
-      - scan/jest.config.js
-      - common/lib
-      - scan/lib
-      - scan/dist
-      - scan/__tests__
-      - vsts/lib
-      - vsts/QodanaScan
-      - build.gradle.kts
+  name: qodana.recommended.full
 include:
   - name: Eslint
   - name: GrazieInspection
