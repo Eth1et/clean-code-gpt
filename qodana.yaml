@@ -1,2 +1,5 @@
 version: "1.0"
-linter: jetbrains/qodana.recommended.all
+linter: jetbrains/qodana-jvm:latest
+projectJDK: 11
+profile:
+  name: qodana.recommended.full
