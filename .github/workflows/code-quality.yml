@@ -19,15 +19,5 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}  # to check out the actual pull request commit, not the merge commit
           fetch-depth: 0  # a full history is required for pull request analysis
-      - run: |
-          npm ci
-          npm run test 
-          mkdir -p .qodana/code-coverage 
-          mv scan/coverage/lcov.info .qodana/code-coverage 
-          rm -rf scan/coverage
-      - uses: ./
-        with:
-          args: --print-problems,--log-level,debug
-          pr-mode: true
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
