@@ -1,5 +1,6 @@
 version: "1.0"
 linter: jetbrains/qodana-jvm:latest
+linter: jetbrains/qodana-python-community
 profile:
   name: qodana.recommended.all
 include:
