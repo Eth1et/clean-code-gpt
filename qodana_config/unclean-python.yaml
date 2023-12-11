@@ -1,11 +1,3 @@
 version: "1.0"
 linter: jetbrains/qodana-python:latest
 projectJDK: 11
-profile:
-  name: qodana.recommended.full
-  licenseRules:
-  - keys:
-      - "Apache-2.0"
-    allowed:
-      - "0BSD"
-      - "FPL"
