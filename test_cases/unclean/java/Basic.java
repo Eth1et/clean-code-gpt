@@ -34,6 +34,33 @@ public class Basic {
                 numbers[i] = numbers[i] / 2;
             }
         }
+               if (sum > 50) {
+            for (int i = 0; i < numbers.length; i++) {
+                numbers[i] = numbers[i] * 2;
+            }
+        } else {
+            for (int i = 0; i < numbers.length; i++) {
+                numbers[i] = numbers[i] / 2;
+            }
+        }
+               if (sum > 50) {
+            for (int i = 0; i < numbers.length; i++) {
+                numbers[i] = numbers[i] * 2;
+            }
+        } else {
+            for (int i = 0; i < numbers.length; i++) {
+                numbers[i] = numbers[i] / 2;
+            }
+        }
+               if (sum > 50) {
+            for (int i = 0; i < numbers.length; i++) {
+                numbers[i] = numbers[i] * 2;
+            }
+        } else {
+            for (int i = 0; i < numbers.length; i++) {
+                numbers[i] = numbers[i] / 2;
+            }
+        }
 
         for (int i = 0; i < numbers.length; i++) {
             if (i % 2 == 0) {
