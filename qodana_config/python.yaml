@@ -35,11 +35,11 @@ inspections:
           file:
             extension: "py"
         code:
-          matches: "^[^#]*\b(?:var|let|const|def|class)\s+(\w+)"
+          matches: "^[^#]*\\b(?:var|let|const|def|class)\\s+(\\w+)"
           occurrences: "< 2"
       - name: "Deep Nesting"
         target:
           file:
             extension: "py"
         code:
-          matches: "^\s{8,}"
+          matches: "^\\s{8,}"
