@@ -3,11 +3,6 @@ linter: "jetbrains/qodana-python:latest"
 projectJDK: 11
 profile:
   name: "qodana.recommended.full"
-
-I apologize for the oversight. You're correct that clean code encompasses more than just SOLID principles, and the initial example may not cover all aspects adequately. Creating a comprehensive set of clean code inspections can be quite challenging, but I'll provide a more elaborate example that includes a variety of clean code practices:
-
-yaml
-Copy code
 inspections:
   - name: "Clean Code Practices"
     description: "Check adherence to clean code principles"
