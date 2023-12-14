@@ -28,7 +28,7 @@ inspections:
           file:
             extension: "py"
         code:
-          matches: "def [^_]+\(.*\):"
+          matches: "def [^_]+\\(.*\\):"
           lines: "> 20"
       - name: "Unused Variables"
         target:
