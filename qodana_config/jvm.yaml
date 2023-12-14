@@ -1,26 +1,3 @@
 version: "1.0"
-linter: "jetbrains/qodana-jvm:latest"
+linter: "jetbrains/qodana-jvm-community:latest"
 projectJDK: 11
-inspections:
-  - java/bytecode_analysis
-  - java/code_smells
-  - java/complexity
-  - java/duplicates
-  - java/imports
-  - java/instrumentation
-  - java/unnecessary_code
-  - java/tests
-
-  # Clean Code Practices
-  - java/unnecessary_null_check
-  - java/unnecessary_stream_to_array
-  - java/unnecessary_stream_count
-  - java/unnecessary_stream_to_list
-  - java/unnecessary_stream_collect
-  - java/unnecessary_stream_reduce
-  - java/unnecessary_stream_find_first
-  - java/unnecessary_stream_any_match
-  - java/unnecessary_stream_all_match
-
-  # Naming Conventions
-  - java/naming_convention
