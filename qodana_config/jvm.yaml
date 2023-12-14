@@ -3,5 +3,3 @@ linter: "jetbrains/qodana-jvm:latest"
 projectJDK: 11
 profile:
   name: "qodana.recommended.full"
-include:
-  - "qodana.recommended.all.yaml"

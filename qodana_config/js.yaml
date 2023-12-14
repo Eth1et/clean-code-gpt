@@ -2,6 +2,4 @@ version: "1.0"
 linter: "jetbrains/qodana-js:latest"
 projectJDK: 11
 profile:
-  name: "qodana.recommended.full"
-include:
-  - "qodana.recommended.all.yaml"
+  name: "qodana.recommended.all"
