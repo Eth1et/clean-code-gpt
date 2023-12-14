@@ -1,8 +1,7 @@
 version: "1.0"
 
 projectJDK: 11
-profile:
-  name: "qodana.recommended.full"
+
 inspections:
   - python/builtin_analyzer
   - python/codestyle
