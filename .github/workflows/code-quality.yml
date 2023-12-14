@@ -15,17 +15,17 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-      - name: 'Use qodana-unclean-python config'
-        run: cp qodana_config/unclean-python.yaml qodana.yaml
+      - name: 'Use qodana-python config'
+        run: cp qodana_config/python.yaml qodana.yaml
 
-      - name: 'Qodana Unclean Python Scan'
+      - name: 'Qodana Python Scan'
         uses: JetBrains/qodana-action@v2023.2
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
         with:
           args: |
             --source-directory,test_cases/unclean/python,
-          artifact-name: qodana-unclean-python
+          artifact-name: qodana-python
 
   qodana-unclean-js:
     runs-on: ubuntu-latest
@@ -38,15 +38,15 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-      - name: 'Use qodana-unclean-js config'
-        run: cp qodana_config/unclean-js.yaml qodana.yaml
+      - name: 'Use qodana-js config'
+        run: cp qodana_config/js.yaml qodana.yaml
 
-      - name: 'Qodana Unclean JS Scan'
+      - name: 'Qodana JS Scan'
         uses: JetBrains/qodana-action@v2023.2
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
         with:
           args: |
             --source-directory,test_cases/unclean/js,
-          artifact-name: qodana-unclean-js
+          artifact-name: qodana-js
     
