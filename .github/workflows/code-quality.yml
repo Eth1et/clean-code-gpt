@@ -24,7 +24,7 @@ jobs:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
         with:
           args: |
-            --source-directory,test_cases/unclean/python,
+            --source-directory,test_cases/,
           artifact-name: qodana-python
 
   qodana-unclean-js:
@@ -47,6 +47,6 @@ jobs:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
         with:
           args: |
-            --source-directory,test_cases/unclean/js,
+            --source-directory,test_cases/,
           artifact-name: qodana-js
     
