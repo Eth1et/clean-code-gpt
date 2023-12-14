@@ -1,25 +1,3 @@
 version: "1.0"
-
+linter: "jetbrains/qodana-python:latest"
 projectJDK: 11
-
-inspections:
-  - python/builtin_analyzer
-  - python/codestyle
-  - python/complexity
-  - python/duplicate_code
-  - python/imports
-  - python/suspicious_code
-  - python/tests
-
-  # Clean Code Practices
-  - python/unnecessary_pass
-  - python/unnecessary_lambda
-  - python/unnecessary_comprehension
-  - python/unnecessary_continue
-  - python/unnecessary_else
-  - python/unnecessary_if
-  - python/unnecessary_return
-  - python/unnecessary_raise
-
-  # Naming Conventions
-  - python/naming_convention
