@@ -2,4 +2,4 @@ version: "1.0"
 linter: "jetbrains/qodana-dotnet:latest"
 projectJDK: 11
 profile:
-  name: "qodana.dotnet.recommended"
+  name: "qodana.recommended"
