@@ -26,6 +26,7 @@ jobs:
           args: |
             --source-directory,test_cases/,
           artifact-name: qodana-python
+          pr-mode: false
 
   qodana-js:
     runs-on: ubuntu-latest
@@ -49,6 +50,7 @@ jobs:
           args: |
             --source-directory,test_cases/,
           artifact-name: qodana-js
+          pr-mode: false
 
   qodana-jvm:
     runs-on: ubuntu-latest
@@ -72,6 +74,7 @@ jobs:
           args: |
             --source-directory,test_cases/,
           artifact-name: qodana-jvm
+          pr-mode: false
 
   qodana-dotnet:
     runs-on: ubuntu-latest
@@ -95,3 +98,8 @@ jobs:
           args: |
             --source-directory,test_cases/,
           artifact-name: qodana-dotnet
+          pr-mode: false
+
+      - uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ${{ runner.temp }}/qodana.sarif.json
