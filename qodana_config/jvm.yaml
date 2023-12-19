@@ -1,5 +1,3 @@
 version: "1.0"
-linter: "jetbrains/qodana-jvm-community:latest"
+language: java
 projectJDK: 11
-profile:
-  name: "qodana.recommended"
