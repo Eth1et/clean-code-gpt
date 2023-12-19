@@ -7,6 +7,9 @@ public class BadCodeExample {
         // Rule violation: Unused variable
         int unusedVariable = 10;
 
+        //fuck the police xd
+        (float)(int a) / 10 + 1;
+
         // Rule violation: Unnecessary parentheses
         if ((true)) {
             System.out.println("Unnecessary parentheses");
