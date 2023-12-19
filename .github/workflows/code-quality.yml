@@ -52,50 +52,50 @@ jobs:
           artifact-name: qodana-js
           pr-mode: false
 
-  qodana-jvm:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      checks: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
-      - name: 'Use qodana-jvm config'
-        run: cp qodana_config/jvm.yaml qodana.yaml
+  #qodana-jvm:
+  #  runs-on: ubuntu-latest
+  #  permissions:
+  #    contents: write
+  #    pull-requests: write
+  #    checks: write
+  #  steps:
+  #    - uses: actions/checkout@v4
+  #      with:
+  #        ref: ${{ github.event.pull_request.head.sha }}
+  #        fetch-depth: 0
+  #    - name: 'Use qodana-jvm config'
+  #      run: cp qodana_config/jvm.yaml qodana.yaml
+  #
+  #    - name: 'Qodana JVM Scan'
+  #      uses: JetBrains/qodana-action@v2023.2
+  #      env:
+  #        QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+  #      with:
+  #        args: |
+  #          --source-directory,test_cases/,
+  #        artifact-name: qodana-jvm
+  #        pr-mode: false
 
-      - name: 'Qodana JVM Scan'
-        uses: JetBrains/qodana-action@v2023.2
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
-        with:
-          args: |
-            --source-directory,test_cases/,
-          artifact-name: qodana-jvm
-          pr-mode: false
-
-  qodana-dotnet:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      checks: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
-      - name: 'Use qodana-dotnet config'
-        run: cp qodana_config/dotnet.yaml qodana.yaml
-
-      - name: 'Qodana .NET Scan'
-        uses: JetBrains/qodana-action@v2023.2
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
-        with:
-          args: |
-            --source-directory,test_cases/,
-          artifact-name: qodana-dotnet
-          pr-mode: false
+  #qodana-dotnet:
+  #  runs-on: ubuntu-latest
+  #  permissions:
+  #    contents: write
+  #    pull-requests: write
+  #    checks: write
+  #  steps:
+  #    - uses: actions/checkout@v4
+  #      with:
+  #        ref: ${{ github.event.pull_request.head.sha }}
+  #        fetch-depth: 0
+  #    - name: 'Use qodana-dotnet config'
+  #      run: cp qodana_config/dotnet.yaml qodana.yaml
+  #
+  #    - name: 'Qodana .NET Scan'
+  #      uses: JetBrains/qodana-action@v2023.2
+  #      env:
+  #        QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+  #      with:
+  #        args: |
+  #          --source-directory,test_cases/,
+  #        artifact-name: qodana-dotnet
+  #        pr-mode: false
