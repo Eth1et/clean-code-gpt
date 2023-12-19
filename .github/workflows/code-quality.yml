@@ -72,7 +72,7 @@ jobs:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
         with:
           args: |
-            --source-directory,test_cases/unclean/java,
+            --source-directory,test_cases/,
           artifact-name: qodana-jvm
           pr-mode: false
 
@@ -96,6 +96,6 @@ jobs:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
         with:
           args: |
-            --source-directory,test_cases/unclean/csharp,
+            --source-directory,test_cases/,
           artifact-name: qodana-dotnet
           pr-mode: false
