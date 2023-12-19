@@ -1,0 +1,14 @@
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\bin\Debug\net7.0\Z9WTNS_JDA4YZ.exe
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\bin\Debug\net7.0\Z9WTNS_JDA4YZ.deps.json
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\bin\Debug\net7.0\Z9WTNS_JDA4YZ.runtimeconfig.json
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\bin\Debug\net7.0\Z9WTNS_JDA4YZ.dll
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\bin\Debug\net7.0\Z9WTNS_JDA4YZ.pdb
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\obj\Debug\net7.0\Z9WTNS_JDA4YZ.GeneratedMSBuildEditorConfig.editorconfig
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\obj\Debug\net7.0\Z9WTNS_JDA4YZ.AssemblyInfoInputs.cache
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\obj\Debug\net7.0\Z9WTNS_JDA4YZ.AssemblyInfo.cs
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\obj\Debug\net7.0\Z9WTNS_JDA4YZ.csproj.CoreCompileInputs.cache
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\obj\Debug\net7.0\Z9WTNS_JDA4YZ.dll
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\obj\Debug\net7.0\refint\Z9WTNS_JDA4YZ.dll
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\obj\Debug\net7.0\Z9WTNS_JDA4YZ.pdb
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\obj\Debug\net7.0\Z9WTNS_JDA4YZ.genruntimeconfig.cache
+E:\Iskola_stuff\Egyetem\net-income\Z9WTNS_JDA4YZ\obj\Debug\net7.0\ref\Z9WTNS_JDA4YZ.dll

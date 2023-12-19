@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.*;
 
 public class BadCodeExample {
 
@@ -6,9 +7,6 @@ public class BadCodeExample {
     public void BadMethodName() {
         // Rule violation: Unused variable
         int unusedVariable = 10;
-
-        //fuck the police xd
-        (float)(int a) / 10 + 1 /* haha random szöveg */ + (6%2(()));
 
         // Rule violation: Unnecessary parentheses
         if ((true)) {
@@ -26,10 +24,10 @@ public class BadCodeExample {
         }
 
         // Rule violation: Unused import statement
-        import java.util.*; // Uncommenting this line will violate the rule
+        //import java.util.*; // Uncommenting this line will violate the rule
 
         // Rule violation: Avoid using wildcard imports
-        import java.util.*; // Uncommenting this line will violate the rule
+        //import java.util.*; // Uncommenting this line will violate the rule
 
         // Rule violation: Unused private field
         final int unusedField;
@@ -47,7 +45,14 @@ public class BadCodeExample {
         // Rule violation: Nested block
         if (true) {
             if (true) {
-                System.out.println("Nested block");
+                {
+                    System.out.println("Nested block");
+                    {
+                        {
+                            ;
+                        }
+                    }
+                }
             }
         }
 
