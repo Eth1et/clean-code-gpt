@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class BadCodeExample {
 
     // Rule violation: Method name should start with a lowercase letter
@@ -20,14 +22,14 @@ public class BadCodeExample {
             // Empty catch block
         }
 
-        // Rule violation: Unnecessary import statement
+        // Rule violation: Unused import statement
         // import java.util.*; // Uncommenting this line will violate the rule
 
         // Rule violation: Avoid using wildcard imports
         // import java.util.*; // Uncommenting this line will violate the rule
 
         // Rule violation: Unused private field
-        private int unusedField;
+        final int unusedField;
 
         // Rule violation: Incorrect indentation
         System.out.println("Incorrect indentation");
@@ -45,6 +47,12 @@ public class BadCodeExample {
                 System.out.println("Nested block");
             }
         }
+
+        // Rule violation: Use of raw type
+        ArrayList list = new ArrayList();
+
+        // Rule violation: Incorrect array declaration
+        int[] array = new int[] {1, 2, 3};
     }
 
     // Rule violation: Unused method parameter
