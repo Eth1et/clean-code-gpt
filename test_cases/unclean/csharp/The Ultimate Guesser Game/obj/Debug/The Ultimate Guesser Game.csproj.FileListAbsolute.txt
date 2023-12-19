@@ -1,7 +1,0 @@
-D:\Creations\Visual Studio\The Ultimate Guesser Game\bin\Debug\The Ultimate Guesser Game.exe.config
-D:\Creations\Visual Studio\The Ultimate Guesser Game\bin\Debug\The Ultimate Guesser Game.exe
-D:\Creations\Visual Studio\The Ultimate Guesser Game\bin\Debug\The Ultimate Guesser Game.pdb
-D:\Creations\Visual Studio\The Ultimate Guesser Game\obj\Debug\The Ultimate Guesser Game.csprojAssemblyReference.cache
-D:\Creations\Visual Studio\The Ultimate Guesser Game\obj\Debug\The Ultimate Guesser Game.csproj.CoreCompileInputs.cache
-D:\Creations\Visual Studio\The Ultimate Guesser Game\obj\Debug\The Ultimate Guesser Game.exe
-D:\Creations\Visual Studio\The Ultimate Guesser Game\obj\Debug\The Ultimate Guesser Game.pdb
