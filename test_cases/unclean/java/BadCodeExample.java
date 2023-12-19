@@ -8,7 +8,7 @@ public class BadCodeExample {
         int unusedVariable = 10;
 
         //fuck the police xd
-        (float)(int a) / 10 + 1;
+        (float)(int a) / 10 + 1 /* haha random szöveg */ + (6%2(()));
 
         // Rule violation: Unnecessary parentheses
         if ((true)) {
@@ -26,10 +26,10 @@ public class BadCodeExample {
         }
 
         // Rule violation: Unused import statement
-        // import java.util.*; // Uncommenting this line will violate the rule
+        import java.util.*; // Uncommenting this line will violate the rule
 
         // Rule violation: Avoid using wildcard imports
-        // import java.util.*; // Uncommenting this line will violate the rule
+        import java.util.*; // Uncommenting this line will violate the rule
 
         // Rule violation: Unused private field
         final int unusedField;
