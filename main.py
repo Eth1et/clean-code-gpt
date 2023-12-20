@@ -68,6 +68,7 @@ def parse_args():
     parser.add_argument('-m', '--model', choices=tuple(MODELS.keys()), default=DEFAULT_MODEL_NAME)
     parser.add_argument('-p', '--preserve', action='store_true', default=False)
     parser.add_argument('-c', '--console', action='store_true', default=False)
+    parser.add_argument('-cs', '--conflict-strategy', choices=('s', 'skip', 'o', 'overwrite', 'd', 'duplicate'), default='d')
 
     input_group = parser.add_mutually_exclusive_group(required=True)
     input_group.add_argument('-f', '--file', action='store')
@@ -175,15 +176,20 @@ def clean_file(file_path, encoding):
 
 
 def clean_files(cleaned_files, copied_files):
-    for entry in Path(INPUT_PATH).glob('**/*'):    
-        if entry.is_file():
-            if entry.suffix.lower() in LANGUAGE_EXTENSIONS and (ARGS['file'] is None or Path(ARGS['file']).samefile(entry)):
+    if ARGS['file'] is None:
+        files = Path(INPUT_PATH).glob('**/*')
+    else:
+        files = [Path(ARGS['file'])]
+    
+    for entry in files:
+        if entry.is_file() and entry.suffix.lower() in LANGUAGE_EXTENSIONS:
+            if entry.exists() and ARGS['conflict_strategy'] in ('s', 'skip'):
+                continue
+                        
+            cleaned_files.append(clean_file(entry, ARGS['encoding']))
             
-                file = entry if ARGS['file'] is None else (INPUT_PATH / Path(ARGS['file']).name) 
-                cleaned_files.append(clean_file(file, ARGS['encoding']))
-
-            elif ARGS['preserve']:
-                copied_files.append(entry)
+        elif ARGS['preserve']:
+            copied_files.append(entry)
 
 
 def copy_preserved(copied_files):
@@ -214,8 +220,18 @@ def write_output(cleaned_files):
             dir = Path(OUTPUT_PATH) / cleaned_file.dirname
             if not dir.exists():
                 dir.mkdir(parents=True)
+                
+            full_path = Path(dir / cleaned_file.filename)
 
-            (dir / cleaned_file.filename).write_text(clean_code, encoding=ARGS['encoding'])
+            if full_path.exists() and ARGS['conflict_strategy'] in ('d', 'duplicate'):
+                original_filename = full_path.stem
+                clone_id = 0
+                
+                while full_path.exists():
+                    full_path.rename(full_path.with_name(f"{original_filename} ({clone_id}){full_path.suffix}"))
+                    clone_id += 1
+            
+            full_path.write_text(clean_code, encoding=ARGS['encoding'])
 
 
 def main():
