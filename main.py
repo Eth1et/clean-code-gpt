@@ -2,7 +2,8 @@ import openai
 import json
 import argparse
 from pathlib import Path
-from shutil import copy2
+import aiofiles
+import asyncio
 import tiktoken
 from tqdm import tqdm
 from tenacity import retry, wait_random_exponential, stop_after_attempt
@@ -102,8 +103,8 @@ def create_messages(code_fragment):
 
 
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), reraise=True)
-def chat_completion(messages):
-    response = openai.ChatCompletion.create(
+async def chat_completion(messages):
+    response = await openai.ChatCompletion.create(
         model=MODEL['name'],
         messages=messages
     )
@@ -132,14 +133,14 @@ def fragmentize_code(code, input_tokens):
     return [code]
 
 
-def clean_fragments(cleaned_file, fragments, input_tokens, output_tokens):
+async def clean_fragments(cleaned_file, fragments, input_tokens, output_tokens):
     global TOTAL_COST
     
     print(f"[Cleaning {cleaned_file.filename}]")
     
     for fragment in tqdm(fragments, desc="Processing Fragments"):
         try:
-            clean = chat_completion(create_messages(fragment))
+            clean = await chat_completion(create_messages(fragment))
         except Exception as exception:
             print("[ERROR] Couldn't finish cleaning file, because of an error:")
             print(exception)
@@ -155,7 +156,7 @@ def clean_fragments(cleaned_file, fragments, input_tokens, output_tokens):
     print(f"[Cleaned {cleaned_file.filename} for ~${input_price + output_price}]")
 
 
-def clean_file(file_path, encoding):
+async def clean_file(file_path, encoding):
     
     with file_path.open('r', encoding=encoding) as file:
         cleaned_file = CleanedFile([], file_path.name, file_path.relative_to(INPUT_PATH).parent)
@@ -170,12 +171,12 @@ def clean_file(file_path, encoding):
         if len(fragments) == 0:
             return cleaned_file
         
-        clean_fragments(cleaned_file, fragments, input_tokens, output_tokens)
+        await clean_fragments(cleaned_file, fragments, input_tokens, output_tokens)
         
         return cleaned_file
 
 
-def clean_files(cleaned_files, copied_files):
+async def clean_files(cleaned_files, copied_files):
     if ARGS['file'] is None:
         files = Path(INPUT_PATH).glob('**/*')
     else:
@@ -192,7 +193,18 @@ def clean_files(cleaned_files, copied_files):
             copied_files.append(entry)
 
 
-def copy_preserved(copied_files):
+async def async_copy(source: Path, destination: Path):
+    async with aiofiles.open(source, 'rb') as source_file:
+        async with aiofiles.open(destination, 'wb') as destination_file:
+            while True:
+                data = await source_file.read(8192)
+                if not data:
+                    break
+
+                await destination_file.write(data)
+
+
+async def copy_preserved(copied_files):
     if ARGS['preserve']:
         
         for copiedFile in copied_files:   
@@ -202,10 +214,27 @@ def copy_preserved(copied_files):
             if not dir.exists():
                 dir.mkdir(parents=True)
             
-            copy2(copiedFile, dir / copiedFile.name)
+            async_copy(copiedFile, dir / copiedFile.name)
 
 
-def write_output(cleaned_files):
+async def write_file(cleaned_file, clean_code):
+    dir = Path(OUTPUT_PATH) / cleaned_file.dirname
+    if not dir.exists():
+        dir.mkdir(parents=True)
+        
+    full_path = Path(dir / cleaned_file.filename)
+    if full_path.exists() and ARGS['conflict_strategy'] in ('d', 'duplicate'):
+        original_filename = full_path.stem
+        clone_id = 0
+        
+        while full_path.exists():
+            full_path.rename(full_path.with_name(f"{original_filename} ({clone_id}){full_path.suffix}"))
+            clone_id += 1
+    
+    full_path.write_text(clean_code, encoding=ARGS['encoding'])
+
+
+async def write_output(cleaned_files):
     for cleaned_file in cleaned_files:
         clean_code = ""
         
@@ -217,24 +246,10 @@ def write_output(cleaned_files):
             print(f"\n\n{'='*15} START OF <{path}>{'='*15}\n{clean_code}\n{'='*15} END OF <{path}>;{'='*15}\n\n")
         
         if not ARGS['console_only']:
-            dir = Path(OUTPUT_PATH) / cleaned_file.dirname
-            if not dir.exists():
-                dir.mkdir(parents=True)
-                
-            full_path = Path(dir / cleaned_file.filename)
-
-            if full_path.exists() and ARGS['conflict_strategy'] in ('d', 'duplicate'):
-                original_filename = full_path.stem
-                clone_id = 0
-                
-                while full_path.exists():
-                    full_path.rename(full_path.with_name(f"{original_filename} ({clone_id}){full_path.suffix}"))
-                    clone_id += 1
-            
-            full_path.write_text(clean_code, encoding=ARGS['encoding'])
+            write_file(cleaned_file, clean_code)
 
 
-def main():
+async def main():
     global INPUT_PATH, OUTPUT_PATH, ENCODER, MODEL
     
     apply_config()
@@ -255,7 +270,7 @@ def main():
         if not Path(OUTPUT_PATH).exists():
             Path(OUTPUT_PATH).mkdir(parents=True)
 
-    clean_files(cleaned_files, copied_files)
+    await clean_files(cleaned_files, copied_files)
     write_output(cleaned_files)
     copy_preserved(copied_files)
         
@@ -267,7 +282,7 @@ def end_run():
 
 if __name__ == "__main__":
     try:
-        main()
+        asyncio.run(main())
     except Exception as e:
         print(e)
         
