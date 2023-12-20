@@ -104,11 +104,11 @@ def create_messages(code_fragment):
 
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), reraise=True)
 async def chat_completion(messages):
-    response = await openai.ChatCompletion.create(
+    response = await openai.ChatCompletion.acreate(
         model=MODEL['name'],
         messages=messages
     )
-
+    
     return response['choices'][0]['message']['content']
 
 
