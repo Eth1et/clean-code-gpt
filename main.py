@@ -102,6 +102,11 @@ def create_messages(code_fragment):
     ]
 
 
+async def execute_tasks_with_progressbar(tasks, _desc, _unit):
+    for task_execution in tqdm(asyncio.as_completed(tasks), desc=_desc, unit=_unit, total=len(tasks)):
+        await task_execution
+    
+
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), reraise=True)
 async def chat_completion(messages):
     response = await openai.ChatCompletion.acreate(
@@ -136,9 +141,7 @@ def fragmentize_code(code, input_tokens):
 async def clean_fragments(cleaned_file, fragments, input_tokens, output_tokens):
     global TOTAL_COST
     
-    print(f"[Cleaning {cleaned_file.filename}]")
-    
-    for fragment in tqdm(fragments, desc="Processing Fragments"):
+    for fragment in fragments:
         try:
             clean = await chat_completion(create_messages(fragment))
         except Exception as exception:
@@ -152,8 +155,6 @@ async def clean_fragments(cleaned_file, fragments, input_tokens, output_tokens):
     input_price = math.ceil(input_tokens / 1000) * MODEL['input_price']
     output_price = math.ceil(output_tokens / 1000) * MODEL['output_price']
     TOTAL_COST += input_price + output_price
-    
-    print(f"[Cleaned {cleaned_file.filename} for ~${input_price + output_price}]")
 
 
 async def clean_file(file_path, encoding):
@@ -184,15 +185,18 @@ async def clean_files(cleaned_files, copied_files):
     else:
         files = [Path(ARGS['file'])]
     
-    for entry in files:
-        if entry.is_file() and entry.suffix.lower() in LANGUAGE_EXTENSIONS:
-            if Path(OUTPUT_PATH / entry.name).exists() and ARGS['conflict_strategy'] in ('s', 'skip'):
-                continue
-                        
-            cleaned_files.append(await clean_file(entry, ARGS['encoding']))
-            
-        elif ARGS['preserve']:
-            copied_files.append(entry)
+    async def task(entry):
+        if entry.is_file():
+            if entry.suffix.lower() in LANGUAGE_EXTENSIONS:
+                
+                if not Path(OUTPUT_PATH / entry.name).exists() or ARGS['conflict_strategy'] not in ('s', 'skip'):
+                    cleaned_files.append(await clean_file(entry, ARGS['encoding']))
+
+            elif ARGS['preserve']:
+                copied_files.append(entry)
+    
+    tasks = [task(entry) for entry in files]
+    await execute_tasks_with_progressbar(tasks, "Processing Files", "file")
 
 
 async def async_copy(source: Path, destination: Path):
@@ -207,16 +211,19 @@ async def async_copy(source: Path, destination: Path):
 
 
 async def copy_preserved(copied_files):
+    
+    async def task(copied_file):
+        dir = copied_file.relative_to(INPUT_PATH).parent
+        dir = OUTPUT_PATH / dir 
+
+        if not dir.exists():
+            dir.mkdir(parents=True)
+
+        await async_copy(copied_file, dir / copied_file.name)
+    
     if ARGS['preserve']:
-        
-        for copiedFile in copied_files:   
-            dir = copiedFile.relative_to(INPUT_PATH).parent
-            dir = OUTPUT_PATH / dir 
-            
-            if not dir.exists():
-                dir.mkdir(parents=True)
-            
-            await async_copy(copiedFile, dir / copiedFile.name)
+        tasks = [task(copied_file) for copied_file in copied_files]
+        await execute_tasks_with_progressbar(tasks, "Copying Preserved", "file")
 
 
 async def write_file(cleaned_file, clean_code):
@@ -230,26 +237,31 @@ async def write_file(cleaned_file, clean_code):
         clone_id = 0
 
         while full_path.exists():
-            full_path.rename(full_path.with_name(f"{original_filename} ({clone_id}){full_path.suffix}"))
+            full_path = full_path.with_name(f"{original_filename} ({clone_id}){full_path.suffix}")
+            if clone_id == 100: return
             clone_id += 1
     
     full_path.write_text(clean_code, encoding=ARGS['encoding'])
 
 
 async def write_output(cleaned_files):
-    for cleaned_file in cleaned_files:
+    
+    async def task(cleaned_file):
         clean_code = ""
-        
+
         for fragment in cleaned_file.fragments:
-            clean_code = clean_code + fragment.clean
-        
+            clean_code += fragment.clean
+
         if ARGS['console'] or ARGS['console_only']:
             path = Path(cleaned_file.dirname) / cleaned_file.filename
             print(f"\n\n{'='*15} START OF <{path}>{'='*15}\n{clean_code}\n{'='*15} END OF <{path}>;{'='*15}\n\n")
-        
+
         if not ARGS['console_only']:
             await write_file(cleaned_file, clean_code)
-
+    
+    tasks = [task(cleaned_file) for cleaned_file in cleaned_files]
+    await execute_tasks_with_progressbar(tasks, "Writing Output", "file")
+        
 
 async def main():
     global INPUT_PATH, OUTPUT_PATH, ENCODER, MODEL
