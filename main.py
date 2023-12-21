@@ -177,6 +177,8 @@ async def clean_file(file_path, encoding):
 
 
 async def clean_files(cleaned_files, copied_files):
+    global OUTPUT_PATH
+    
     if ARGS['file'] is None:
         files = Path(INPUT_PATH).glob('**/*')
     else:
@@ -184,10 +186,10 @@ async def clean_files(cleaned_files, copied_files):
     
     for entry in files:
         if entry.is_file() and entry.suffix.lower() in LANGUAGE_EXTENSIONS:
-            if entry.exists() and ARGS['conflict_strategy'] in ('s', 'skip'):
+            if Path(OUTPUT_PATH / entry.name).exists() and ARGS['conflict_strategy'] in ('s', 'skip'):
                 continue
                         
-            cleaned_files.append(clean_file(entry, ARGS['encoding']))
+            cleaned_files.append(await clean_file(entry, ARGS['encoding']))
             
         elif ARGS['preserve']:
             copied_files.append(entry)
@@ -214,7 +216,7 @@ async def copy_preserved(copied_files):
             if not dir.exists():
                 dir.mkdir(parents=True)
             
-            async_copy(copiedFile, dir / copiedFile.name)
+            await async_copy(copiedFile, dir / copiedFile.name)
 
 
 async def write_file(cleaned_file, clean_code):
@@ -226,7 +228,7 @@ async def write_file(cleaned_file, clean_code):
     if full_path.exists() and ARGS['conflict_strategy'] in ('d', 'duplicate'):
         original_filename = full_path.stem
         clone_id = 0
-        
+
         while full_path.exists():
             full_path.rename(full_path.with_name(f"{original_filename} ({clone_id}){full_path.suffix}"))
             clone_id += 1
@@ -246,7 +248,7 @@ async def write_output(cleaned_files):
             print(f"\n\n{'='*15} START OF <{path}>{'='*15}\n{clean_code}\n{'='*15} END OF <{path}>;{'='*15}\n\n")
         
         if not ARGS['console_only']:
-            write_file(cleaned_file, clean_code)
+            await write_file(cleaned_file, clean_code)
 
 
 async def main():
@@ -271,8 +273,8 @@ async def main():
             Path(OUTPUT_PATH).mkdir(parents=True)
 
     await clean_files(cleaned_files, copied_files)
-    write_output(cleaned_files)
-    copy_preserved(copied_files)
+    await write_output(cleaned_files)
+    await copy_preserved(copied_files)
         
 
 def end_run():
