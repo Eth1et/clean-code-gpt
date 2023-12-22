@@ -1,6 +1,0 @@
-{
-    "api_key" : "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",
-    "organization" : "org-LeQ85KBOcPjhBjdwGjk5AslR",
-    "default_model" : "gpt-3.5-turbo",
-    "instruction": "Refactor the code to adhere to clean code principles, enhancing clarity and maintainability, but do not alter the code's functionality. It's crucial that the output for a given input remains identical to the original code. Avoid introducing errors. Feel free to modify immediate steps as long as they don't affect the results. The response should only contain code, and avoid using code blocks."
-}

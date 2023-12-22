@@ -1,5 +1,6 @@
 import openai
 import json
+import os
 import argparse
 from pathlib import Path
 import aiofiles
@@ -10,10 +11,13 @@ from tenacity import retry, wait_random_exponential, stop_after_attempt
 import math
 
 
+CONFIG_FOLDER_PATH = "configs"
 MODELS = {}
 MODEL = {}
 DEFAULT_MODEL_NAME = ""
+DEFAULT_INSTRUCTION_NAME = ""
 INSTRUCTION = ""
+INSTRUCTIONS = {}
 ARGS = {}
 LANGUAGE_EXTENSIONS = []
 ENCODER = None
@@ -36,66 +40,78 @@ class CleanedFile:
 
 
 def apply_config():
-    global INSTRUCTION, DEFAULT_MODEL_NAME
+    global DEFAULT_INSTRUCTION_NAME, DEFAULT_MODEL_NAME, CONFIG_FOLDER_PATH
     
-    with open("config.json") as cfg:
+    with open(Path(CONFIG_FOLDER_PATH) / 'config.json') as cfg:
         config = json.load(cfg)
         openai.api_key = config['api_key']
         openai.organization = config['organization']
-        DEFAULT_MODEL_NAME, INSTRUCTION = config['default_model'], config['instruction']
+        DEFAULT_MODEL_NAME, DEFAULT_INSTRUCTION_NAME = config['default_model'], config['default_instruction']
 
 
 def load_models():
-    global MODELS
+    global MODELS, CONFIG_FOLDER_PATH
     
-    with open('models.json', 'r') as models:
+    with open(Path(CONFIG_FOLDER_PATH) / 'models.json', 'r') as models:
         MODELS = json.load(models)
 
 
 def load_extensions():
-    global LANGUAGE_EXTENSIONS
+    global LANGUAGE_EXTENSIONS, CONFIG_FOLDER_PATH
     
-    with open('language_extensions.json', 'r') as extensions:
+    with open(Path(CONFIG_FOLDER_PATH) / 'language_extensions.json', 'r') as extensions:
         LANGUAGE_EXTENSIONS = json.load(extensions)['extensions']
 
 
+def load_instructions():
+    global INSTRUCTIONS, CONFIG_FOLDER_PATH
+    
+    with open(Path(CONFIG_FOLDER_PATH) / 'instructions.json', 'r') as instructions:
+        INSTRUCTIONS = json.load(instructions)
+    
+
 def parse_args():
-    global ARGS
+    global ARGS, MODELS, DEFAULT_INSTRUCTION_NAME, INSTRUCTION
     
     parser = argparse.ArgumentParser()
     parser.version = '0.1'
 
+    parser.add_argument('target', action='store', type=Path, help="The target file's or directory's path.")
     parser.add_argument('-e', '--encoding', choices=('ascii', 'utf-7', 'utf-8', 'utf-16', 'utf-32'), default='utf-8')
     parser.add_argument('-m', '--model', choices=tuple(MODELS.keys()), default=DEFAULT_MODEL_NAME)
     parser.add_argument('-p', '--preserve', action='store_true', default=False)
     parser.add_argument('-c', '--console', action='store_true', default=False)
-    parser.add_argument('-cs', '--conflict-strategy', choices=('s', 'skip', 'o', 'overwrite', 'd', 'duplicate'), default='d')
-
-    input_group = parser.add_mutually_exclusive_group(required=True)
-    input_group.add_argument('-f', '--file', action='store')
-    input_group.add_argument('-d', '--dir', action='store')
+    parser.add_argument('-cs', '--conflict-strategy', choices=('s', 'skip', 'o', 'overwrite', 'd', 'duplicate'), default='s')
+    parser.add_argument('-i', '--instruction-name', action='store', default=DEFAULT_INSTRUCTION_NAME, type=str, help='The key of the chosen instruction from instructions.json.')
     
     output_group = parser.add_mutually_exclusive_group()
     output_group.add_argument('-co', '--console_only', action='store_true')
-    output_group.add_argument('-o', '--out', action='store')
+    output_group.add_argument('-o', '--out', action='store', type=Path, help="The output directory's path.")
 
     ARGS = vars(parser.parse_args())
+    INSTRUCTION = INSTRUCTIONS[ARGS['instruction_name']]
+
+    if not Path(ARGS['target']).exists():
+        print("The file or directory you've tried to clean doesn't exist!")
+        quit()
 
     if ARGS['console_only'] and ARGS['preserve']:
         print("Cannot print preserved data to console.")
         print("Do not use (-c|--console) and (-p|--preserve) at the same time!")
-        end_run()
+        quit()
     
     if ARGS['console'] and ARGS['console_only']:
         print("Do not use (-c|--console) and (-co|--console_only) at the same time!")
-        end_run()
+        quit()
     
     if ARGS['out'] and ARGS['console_only']:
         print("Do not use (-c|--console) and (-p|--preserve) at the same time!")
-        end_run()
+        quit()
     
 
 def create_messages(code_fragment):
+    global INSTRUCTION
+    
     return [
         {"role" : "system", "content": INSTRUCTION},
         {"role" : "user", "content": code_fragment}
@@ -103,11 +119,15 @@ def create_messages(code_fragment):
 
 
 async def execute_tasks_with_progressbar(tasks, _desc, _unit):
+    if len(tasks) == 0:
+        print("There is nothing to write!")
+        return
+        
     for task_execution in tqdm(asyncio.as_completed(tasks), desc=_desc, unit=_unit, total=len(tasks)):
         await task_execution
     
 
-@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6), reraise=True)
+@retry(wait=wait_random_exponential(min=1, max=90), stop=stop_after_attempt(22), reraise=True)
 async def chat_completion(messages):
     response = await openai.ChatCompletion.acreate(
         model=MODEL['name'],
@@ -130,9 +150,24 @@ def count_tokens(messages):
     return num_tokens
 
 
+def remove_gpt_markdown(code_fragment: str):
+    if code_fragment.find("```"):
+        lines = code_fragment.splitlines()
+        lines = lines[1:]
+
+        for i, line in enumerate(lines):
+            if line.startswith("```"):
+                lines = lines[:i]
+                break
+        
+        code_fragment = os.linesep.join(lines)
+    
+    return code_fragment
+
+
 def fragmentize_code(code, input_tokens):
     if input_tokens > MODEL['max_tokens']:  ## Only placeholder, logic will be implemented later
-        print(f'[ERROR] Too large imput file: {input_tokens} (max: {MODEL["max_tokens"]})')
+        print(f'[ERROR] Too large input file: {input_tokens} (max: {MODEL["max_tokens"]})')
         return []
         
     return [code]
@@ -149,7 +184,7 @@ async def clean_fragments(cleaned_file, fragments, input_tokens, output_tokens):
             print(exception)
             break
         
-        cleaned_file.fragments.append(CleanedCode(fragment, clean))
+        cleaned_file.fragments.append(CleanedCode(fragment, remove_gpt_markdown(clean)))
         output_tokens += len(ENCODER.encode(clean))
     
     input_price = math.ceil(input_tokens / 1000) * MODEL['input_price']
@@ -158,10 +193,8 @@ async def clean_fragments(cleaned_file, fragments, input_tokens, output_tokens):
 
 
 async def clean_file(file_path, encoding):
-    
     with file_path.open('r', encoding=encoding) as file:
         cleaned_file = CleanedFile([], file_path.name, file_path.relative_to(INPUT_PATH).parent)
-        
         code = ''.join(file.readlines())
         
         input_tokens = count_tokens(create_messages(code))
@@ -180,10 +213,7 @@ async def clean_file(file_path, encoding):
 async def clean_files(cleaned_files, copied_files):
     global OUTPUT_PATH
     
-    if ARGS['file'] is None:
-        files = Path(INPUT_PATH).glob('**/*')
-    else:
-        files = [Path(ARGS['file'])]
+    files = INPUT_PATH.glob('**/*') if INPUT_PATH.is_dir() else [INPUT_PATH]
     
     async def task(entry):
         if entry.is_file():
@@ -268,13 +298,13 @@ async def main():
     
     apply_config()
     load_models()
+    load_instructions()
     parse_args()
     load_extensions()
 
     MODEL = MODELS[ARGS['model']]
     ENCODER = tiktoken.encoding_for_model(MODEL['name'])
-    INPUT_PATH = Path(ARGS['dir']  if ARGS['file'] is None else Path(ARGS['file']).parent) 
-    INPUT_PATH = INPUT_PATH.absolute()
+    INPUT_PATH = Path(ARGS['target']).absolute()
     OUTPUT_PATH = (INPUT_PATH.parent / 'clean_code') if ARGS['out'] is None else Path(ARGS['out'])
     
     cleaned_files = []

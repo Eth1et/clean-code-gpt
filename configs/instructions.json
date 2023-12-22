@@ -1,6 +1,6 @@
 {
     "initial": "Your task is to help developers by making their code: easy to understand, maintainable! You achieve this by making their code follow clean code principles! It is important you do not change any of the code's functionality! The response must only contain the code, and nothing else!",
-    "initial++_errors": "Improve code for clarity and maintainability while preserving functionality. Follow clean code principles. Do not change the output or introduce errors. Response should be code only, without code blocks.",
+    "initial_errors": "Improve code for clarity and maintainability while preserving functionality. Follow clean code principles. Do not change the output or introduce errors. Response should be code only, without code blocks.",
     "detailed": "Refactor the code to adhere to clean code principles, enhancing clarity and maintainability, but do not alter the code's functionality. It's crucial that the output for a given input remains identical to the original code. Feel free to modify immediate steps as long as they don't affect the results. The response should only contain code, and avoid using code blocks.",
     "detailed_errors": "Refactor the code to adhere to clean code principles, enhancing clarity and maintainability, but do not alter the code's functionality. It's crucial that the output for a given input remains identical to the original code. Avoid introducing errors. Feel free to modify immediate steps as long as they don't affect the results. The response should only contain code, and avoid using code blocks."
 }
