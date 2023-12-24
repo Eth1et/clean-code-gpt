@@ -1,6 +1,5 @@
 import openai
 import json
-import os
 import argparse
 from pathlib import Path
 import aiofiles
@@ -150,19 +149,23 @@ def count_tokens(messages):
     return num_tokens
 
 
-def remove_gpt_markdown(code_fragment: str):
-    if code_fragment.find("```"):
-        lines = code_fragment.splitlines()
-        lines = lines[1:]
-
-        for i, line in enumerate(lines):
-            if line.startswith("```"):
-                lines = lines[:i]
-                break
-        
-        code_fragment = os.linesep.join(lines)
+async def remove_gpt_markdown(code_fragment: str):
+    lines = code_fragment.splitlines()
+    start = end = -1
     
-    return code_fragment
+    for i, line in enumerate(lines):
+        if line.startswith("```"):
+            if start == -1:
+                start = i
+            end = i
+            
+    if start != -1:
+        lines = lines[start+1:]
+        
+        if start != end:
+            lines = lines[:end]
+    
+    return '\n'.join(lines)
 
 
 def fragmentize_code(code, input_tokens):
@@ -184,7 +187,7 @@ async def clean_fragments(cleaned_file, fragments, input_tokens, output_tokens):
             print(exception)
             break
         
-        cleaned_file.fragments.append(CleanedCode(fragment, remove_gpt_markdown(clean)))
+        cleaned_file.fragments.append(CleanedCode(fragment, await remove_gpt_markdown(clean)))
         output_tokens += len(ENCODER.encode(clean))
     
     input_price = math.ceil(input_tokens / 1000) * MODEL['input_price']
@@ -320,7 +323,7 @@ async def main():
         
 
 def end_run():
-    print(f"[Finished cleaning all the files | Total Cost: ~${TOTAL_COST}]")
+    print(f"[Finished cleaning all the files | Total Cost: ~${TOTAL_COST}]\n")
     quit()
 
 

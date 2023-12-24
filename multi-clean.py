@@ -2,10 +2,14 @@ import subprocess
 import argparse
 from pathlib import Path
 import json
+import re
+import asyncio
 
 
 CONFIG_FOLDER_PATH = Path('configs')
+COST_PATTERN = r'\$(\d+(?:\.\d+)?)'
 
+ARGS = {}
 MODELS = {}
 INSTRUCTIONS = {}
 
@@ -56,10 +60,10 @@ def load_instructions():
     
     with open(ARGS['instructions_path'], 'r') as instructions:
         INSTRUCTIONS = json.load(instructions)
-    
+
 
 def main():
-    global INSTRUCTIONS, ARGS
+    global INSTRUCTIONS, ARGS, COST_PATTERN
     
     load_models()
     parse_args()
@@ -72,9 +76,24 @@ def main():
         
         if not target_folder.exists():
             target_folder.mkdir(parents=True)
+            
+        command = [
+            'python', '.\clean.py', 
+            f'{ARGS["src"]}', 
+            f'-o={target_folder}',
+            f'-i={instruction}',
+            f'-m={model}',
+            f'-cs={ARGS["conflict_strategy"]}',
+            f'-e={ARGS["encoding"]}',
+        ]
+        
+        if ARGS['preserve']:
+            command.append('-p')
         
         for _ in range(ARGS['clean_count']):
-            subprocess.run(f"python .\clean.py {ARGS['src']} -o {target_folder} -i={instruction} -m={model} -cs={ARGS['conflict_strategy']} -e={ARGS['encoding']} {'-p' if ARGS['preserve'] else ''}")
+            subprocess.run(command)
+    
+    print(f"[Finished multi-clean | Total Cost: ~$?????]\n")
 
 
 if __name__ == '__main__':
