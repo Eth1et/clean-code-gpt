@@ -39,7 +39,7 @@ class CleanedFile:
 
 
 def apply_config():
-    global DEFAULT_INSTRUCTION_NAME, DEFAULT_MODEL_NAME, CONFIG_FOLDER_PATH
+    global DEFAULT_INSTRUCTION_NAME, DEFAULT_MODEL_NAME
     
     with open(Path(CONFIG_FOLDER_PATH) / 'config.json') as cfg:
         config = json.load(cfg)
@@ -49,14 +49,14 @@ def apply_config():
 
 
 def load_models():
-    global MODELS, CONFIG_FOLDER_PATH
+    global MODELS
     
     with open(Path(CONFIG_FOLDER_PATH) / 'models.json', 'r') as models:
         MODELS = json.load(models)
 
 
 def load_extensions():
-    global LANGUAGE_EXTENSIONS, CONFIG_FOLDER_PATH
+    global LANGUAGE_EXTENSIONS
     
     with open(Path(CONFIG_FOLDER_PATH) / 'language_extensions.json', 'r') as extensions:
         LANGUAGE_EXTENSIONS = json.load(extensions)['extensions']
@@ -70,7 +70,7 @@ def load_instructions():
     
 
 def parse_args():
-    global ARGS, MODELS, DEFAULT_INSTRUCTION_NAME, INSTRUCTION
+    global ARGS, INSTRUCTION
     
     parser = argparse.ArgumentParser()
     parser.version = '0.1'
@@ -109,8 +109,6 @@ def parse_args():
     
 
 def create_messages(code_fragment):
-    global INSTRUCTION
-    
     return [
         {"role" : "system", "content": INSTRUCTION},
         {"role" : "user", "content": code_fragment}
@@ -128,10 +126,14 @@ async def execute_tasks_with_progressbar(tasks, _desc, _unit):
 
 @retry(wait=wait_random_exponential(min=1, max=90), stop=stop_after_attempt(22), reraise=True)
 async def chat_completion(messages):
-    response = await openai.ChatCompletion.acreate(
-        model=MODEL['name'],
-        messages=messages
-    )
+    try:
+        response = await openai.ChatCompletion.acreate(
+            model=MODEL['name'],
+            messages=messages
+        )
+    except Exception as e:
+        print(e)
+        raise e
     
     return response['choices'][0]['message']['content']
 
@@ -152,27 +154,36 @@ def count_tokens(messages):
 async def remove_gpt_markdown(code_fragment: str):
     lines = code_fragment.splitlines()
     start = end = -1
+    i, j = 0, len(lines)-1 
     
-    for i, line in enumerate(lines):
-        if line.startswith("```"):
-            if start == -1:
-                start = i
-            end = i
+    while i < j:
+        if lines[i].strip().startswith("```") and start == -1:
+            start = i
+        if lines[j].strip().startswith("```") and end == -1:
+            end = j
             
+        if start != -1 and end != -1:
+            break
+        
+        i += 1
+        j -= 1
+    
     if start != -1:
         lines = lines[start+1:]
+        if end != -1:
+            end -= 1
         
-        if start != end:
-            lines = lines[:end]
+    if end != -1:
+        lines = lines[:end]
     
     return '\n'.join(lines)
 
 
 def fragmentize_code(code, input_tokens):
-    if input_tokens > MODEL['max_tokens']:  ## Only placeholder, logic will be implemented later
+    if input_tokens > MODEL['max_tokens'] * .48:  ## Only placeholder, logic will be implemented later
         print(f'[ERROR] Too large input file: {input_tokens} (max: {MODEL["max_tokens"]})')
         return []
-        
+    
     return [code]
 
 
@@ -199,6 +210,9 @@ async def clean_file(file_path, encoding):
     with file_path.open('r', encoding=encoding) as file:
         cleaned_file = CleanedFile([], file_path.name, file_path.relative_to(INPUT_PATH).parent)
         code = ''.join(file.readlines())
+
+        if code.strip() == '':
+            return cleaned_file
         
         input_tokens = count_tokens(create_messages(code))
         output_tokens = 3
@@ -214,8 +228,6 @@ async def clean_file(file_path, encoding):
 
 
 async def clean_files(cleaned_files, copied_files):
-    global OUTPUT_PATH
-    
     files = INPUT_PATH.glob('**/*') if INPUT_PATH.is_dir() else [INPUT_PATH]
     
     async def task(entry):
@@ -323,7 +335,7 @@ async def main():
         
 
 def end_run():
-    print(f"[Finished cleaning all the files | Total Cost: ~${TOTAL_COST}]\n")
+    print(f"[Finished cleaning all the files | Total Cost: ~${TOTAL_COST:.5}]\n")
     quit()
 
 

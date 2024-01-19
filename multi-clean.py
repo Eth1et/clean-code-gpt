@@ -3,7 +3,6 @@ import argparse
 from pathlib import Path
 import json
 import re
-import asyncio
 
 
 CONFIG_FOLDER_PATH = Path('configs')
@@ -11,14 +10,22 @@ COST_PATTERN = r'\$(\d+(?:\.\d+)?)'
 
 ARGS = {}
 MODELS = {}
+DEFAULT_MODEL_NAME = ''
 INSTRUCTIONS = {}
 
 
 def load_models():
-    global MODELS, CONFIG_FOLDER_PATH
+    global MODELS
     
     with open(Path(CONFIG_FOLDER_PATH) / 'models.json', 'r') as models:
         MODELS = json.load(models)
+
+
+def apply_config():
+    global DEFAULT_MODEL_NAME
+    
+    with open(Path(CONFIG_FOLDER_PATH) / 'config.json') as cfg:
+        DEFAULT_MODEL_NAME = json.load(cfg)['default_model']
 
 
 def parse_args():
@@ -27,10 +34,10 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.version = '0.1'
     
-    parser.add_argument('-s', '--src', action='store', required=True, type=Path, help="Path to unclean file or directory.")
-    parser.add_argument('-o', '--out', action='store', required=True, type=Path, help="Output directory path.")
-    parser.add_argument('-i', '--instructions_path', action='store', required=True, type=Path, help='The path to the json file that contains all the instructions you want to run the clean with. For reference check instructions.json!')
-    parser.add_argument('-m', '--model', action='store', default='gpt-3.5-turbo', choices=(MODELS.keys()))
+    parser.add_argument('src', action='store', type=Path, help="Path to unclean file or directory.")
+    parser.add_argument('out', action='store', type=Path, help="Output directory path.")
+    parser.add_argument('instructions_path', action='store', type=Path, help='The path to the json file that contains all the instructions you want to run the clean with. For reference check instructions.json!')
+    parser.add_argument('-m', '--model', action='store', default=DEFAULT_MODEL_NAME, choices=(MODELS.keys()))
     parser.add_argument('-e', '--encoding', choices=('ascii', 'utf-7', 'utf-8', 'utf-16', 'utf-32'), default='utf-8')
     parser.add_argument('-p', '--preserve', action='store_true', default=False)
     parser.add_argument('-cs', '--conflict-strategy', choices=('s', 'skip', 'o', 'overwrite', 'd', 'duplicate'), default='s')
@@ -42,8 +49,8 @@ def parse_args():
         print(f"The source path doesn't exist! {ARGS['src']}")
         quit()
         
-    if not Path(ARGS['out']).exists():
-        print(f"The output path doesn't exist! {ARGS['out']}")
+    if not Path(ARGS['out']).is_dir():
+        print("The output directory is not a directory")
         quit()
         
     if not Path(ARGS['instructions_path']).exists():
@@ -56,18 +63,22 @@ def parse_args():
         
 
 def load_instructions():
-    global INSTRUCTIONS, CONFIG_FOLDER_PATH
+    global INSTRUCTIONS
     
     with open(ARGS['instructions_path'], 'r') as instructions:
         INSTRUCTIONS = json.load(instructions)
 
 
 def main():
-    global INSTRUCTIONS, ARGS, COST_PATTERN
+    total_cost = 0
     
     load_models()
+    apply_config()
     parse_args()
     load_instructions()
+    
+    if not Path(ARGS['out']).exists():
+        Path(ARGS['out']).mkdir()
     
     model = MODELS[ARGS['model']]['name']
     
@@ -91,10 +102,25 @@ def main():
             command.append('-p')
         
         for _ in range(ARGS['clean_count']):
-            subprocess.run(command)
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, universal_newlines=True, encoding=ARGS["encoding"])
+
+            for line in iter(process.stdout.readline, ""):
+                for cost in re.findall(COST_PATTERN, line):
+                    try:
+                        total_cost += float(cost)
+                    except:
+                        pass
+                    
+                print(line, end="", flush=True)
+
+            process.stdout.close()
+            process.wait()
     
-    print(f"[Finished multi-clean | Total Cost: ~$?????]\n")
+    print(f"[Finished multi-clean | Total Cost: ~${total_cost:.5}]\n")
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(e)

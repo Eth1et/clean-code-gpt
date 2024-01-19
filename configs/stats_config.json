@@ -1,0 +1,13 @@
+{
+    "qodana_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcmdhbml6YXRpb24iOiIzQnhXeCIsInByb2plY3QiOiJ6OEJZOSIsInRva2VuIjoicFZhYWQifQ.2irKZxTExkR6ANo4ok97dDi4A1avmi8Fo5MpH4PNU9E",
+    "linters": {
+        "py": {
+            "extensions": [".py", ".pyi", ".pyc", ".pyd", ".pyo", ".pyw", ".pyz"],
+            "name": "jetbrains/qodana-python:latest"
+        },
+        "js": {
+            "extensions": [".js", ".ts", ".es", ".ejs", ".vue", ".html"],
+            "name": "jetbrains/qodana-js:latest"
+        }
+    }
+}
