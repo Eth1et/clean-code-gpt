@@ -34,14 +34,49 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.version = '0.1'
     
-    parser.add_argument('src', action='store', type=Path, help="Path to unclean file or directory.")
-    parser.add_argument('out', action='store', type=Path, help="Output directory path.")
-    parser.add_argument('instructions_path', action='store', type=Path, help='The path to the json file that contains all the instructions you want to run the clean with. For reference check instructions.json!')
-    parser.add_argument('-m', '--model', action='store', default=DEFAULT_MODEL_NAME, choices=(MODELS.keys()))
-    parser.add_argument('-e', '--encoding', choices=('ascii', 'utf-7', 'utf-8', 'utf-16', 'utf-32'), default='utf-8')
-    parser.add_argument('-p', '--preserve', action='store_true', default=False)
-    parser.add_argument('-cs', '--conflict-strategy', choices=('s', 'skip', 'o', 'overwrite', 'd', 'duplicate'), default='s')
-    parser.add_argument('-cc', '--clean-count', action='store', default=1 , type=int, help="The number of times you want to clean each file [1;10]. It is used for benchmark.")
+    parser.add_argument('src', 
+                        action='store', 
+                        type=Path, 
+                        help="Path to unclean file or directory."
+                        )
+    parser.add_argument('out', 
+                        action='store', 
+                        type=Path, 
+                        help="Output directory path."
+                        )
+    parser.add_argument('instructions_path', 
+                        action='store', 
+                        type=Path, 
+                        help='The path to the json file that contains all the instructions you want to run the clean with. For reference check instructions.json!'
+                        )
+    parser.add_argument('-m', 
+                        '--model', 
+                        action='store', 
+                        default=DEFAULT_MODEL_NAME, 
+                        choices=(MODELS.keys())
+                        )
+    parser.add_argument('-e', 
+                        '--encoding', 
+                        choices=('ascii', 'utf-7', 'utf-8', 'utf-16', 'utf-32'), 
+                        default='utf-8'
+                        )
+    parser.add_argument('-p', 
+                        '--preserve', 
+                        action='store_true', 
+                        default=False
+                        )
+    parser.add_argument('-cs', 
+                        '--conflict-strategy', 
+                        choices=('s', 'skip', 'o', 'overwrite', 'd', 'duplicate'), 
+                        default='s'
+                        )
+    parser.add_argument('-cc', 
+                        '--clean-count', 
+                        action='store', 
+                        default=1 , 
+                        type=int, 
+                        help="The number of times you want to clean each file [1;10]. It is used for benchmark."
+                        )
     
     ARGS = vars(parser.parse_args())
     
@@ -89,7 +124,7 @@ def main():
             target_folder.mkdir(parents=True)
             
         command = [
-            'python', '.\clean.py', 
+            'python', './clean.py', 
             f'{ARGS["src"]}', 
             f'-o={target_folder}',
             f'-i={instruction}',
@@ -108,7 +143,7 @@ def main():
                 for cost in re.findall(COST_PATTERN, line):
                     try:
                         total_cost += float(cost)
-                    except:
+                    except ValueError:
                         pass
                     
                 print(line, end="", flush=True)

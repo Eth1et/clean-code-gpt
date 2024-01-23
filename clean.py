@@ -75,17 +75,55 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.version = '0.1'
 
-    parser.add_argument('target', action='store', type=Path, help="The target file's or directory's path.")
-    parser.add_argument('-e', '--encoding', choices=('ascii', 'utf-7', 'utf-8', 'utf-16', 'utf-32'), default='utf-8')
-    parser.add_argument('-m', '--model', choices=tuple(MODELS.keys()), default=DEFAULT_MODEL_NAME)
-    parser.add_argument('-p', '--preserve', action='store_true', default=False)
-    parser.add_argument('-c', '--console', action='store_true', default=False)
-    parser.add_argument('-cs', '--conflict-strategy', choices=('s', 'skip', 'o', 'overwrite', 'd', 'duplicate'), default='s')
-    parser.add_argument('-i', '--instruction-name', action='store', default=DEFAULT_INSTRUCTION_NAME, type=str, help='The key of the chosen instruction from instructions.json.')
+    parser.add_argument('target',
+                        action='store',
+                        type=Path,
+                        help="The target file's or directory's path."
+                        )
+    parser.add_argument('-e', 
+                        '--encoding', 
+                        choices=('ascii', 'utf-7', 'utf-8', 'utf-16', 'utf-32'),
+                        default='utf-8'
+                        )
+    parser.add_argument('-m', 
+                        '--model', 
+                        choices=tuple(MODELS.keys()),
+                        default=DEFAULT_MODEL_NAME
+                        )
+    parser.add_argument('-p', 
+                        '--preserve', 
+                        action='store_true',
+                        default=False
+                        )
+    parser.add_argument('-c', 
+                        '--console', 
+                        action='store_true', 
+                        default=False
+                        )
+    parser.add_argument('-cs', 
+                        '--conflict-strategy', 
+                        choices=('s', 'skip', 'o', 'overwrite', 'd', 'duplicate'), 
+                        default='s'
+                        )
+    parser.add_argument('-i', 
+                        '--instruction-name',
+                        action='store', 
+                        default=DEFAULT_INSTRUCTION_NAME, 
+                        type=str, 
+                        help='The key of the chosen instruction from instructions.json.'
+                        )
     
-    output_group = parser.add_mutually_exclusive_group()
-    output_group.add_argument('-co', '--console_only', action='store_true')
-    output_group.add_argument('-o', '--out', action='store', type=Path, help="The output directory's path.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-co', 
+                       '--console_only', 
+                       action='store_true'
+                       )
+    group.add_argument('-o', 
+                       '--out', 
+                       action='store', 
+                       type=Path, 
+                       help="The output directory's path."
+                       )
 
     ARGS = vars(parser.parse_args())
     INSTRUCTION = INSTRUCTIONS[ARGS['instruction_name']]
@@ -110,8 +148,8 @@ def parse_args():
 
 def create_messages(code_fragment):
     return [
-        {"role" : "system", "content": INSTRUCTION},
-        {"role" : "user", "content": code_fragment}
+        {"role": "system", "content": INSTRUCTION},
+        {"role": "user", "content": code_fragment}
     ]
 
 
@@ -131,9 +169,9 @@ async def chat_completion(messages):
             model=MODEL['name'],
             messages=messages
         )
-    except Exception as e:
-        print(e)
-        raise e
+    except Exception as exception:
+        print(exception)
+        raise exception
     
     return response['choices'][0]['message']['content']
 
@@ -180,7 +218,7 @@ async def remove_gpt_markdown(code_fragment: str):
 
 
 def fragmentize_code(code, input_tokens):
-    if input_tokens > MODEL['max_tokens'] * .48:  ## Only placeholder, logic will be implemented later
+    if input_tokens > MODEL['max_tokens'] * .48:  # Only placeholder, logic will be implemented later
         print(f'[ERROR] Too large input file: {input_tokens} (max: {MODEL["max_tokens"]})')
         return []
     
@@ -258,13 +296,13 @@ async def async_copy(source: Path, destination: Path):
 async def copy_preserved(copied_files):
     
     async def task(copied_file):
-        dir = copied_file.relative_to(INPUT_PATH).parent
-        dir = OUTPUT_PATH / dir 
+        directory = copied_file.relative_to(INPUT_PATH).parent
+        directory = OUTPUT_PATH / directory 
 
         if not dir.exists():
             dir.mkdir(parents=True)
 
-        await async_copy(copied_file, dir / copied_file.name)
+        await async_copy(copied_file, directory / copied_file.name)
     
     if ARGS['preserve']:
         tasks = [task(copied_file) for copied_file in copied_files]
@@ -272,18 +310,19 @@ async def copy_preserved(copied_files):
 
 
 async def write_file(cleaned_file, clean_code):
-    dir = Path(OUTPUT_PATH) / cleaned_file.dirname
+    directory = Path(OUTPUT_PATH) / cleaned_file.dirname
     if not dir.exists():
         dir.mkdir(parents=True)
         
-    full_path = Path(dir / cleaned_file.filename)
+    full_path = Path(directory / cleaned_file.filename)
     if full_path.exists() and ARGS['conflict_strategy'] in ('d', 'duplicate'):
         original_filename = full_path.stem
         clone_id = 0
 
         while full_path.exists():
             full_path = full_path.with_name(f"{original_filename} ({clone_id}){full_path.suffix}")
-            if clone_id == 100: return
+            if clone_id == 100: 
+                return
             clone_id += 1
     
     full_path.write_text(clean_code, encoding=ARGS['encoding'])
