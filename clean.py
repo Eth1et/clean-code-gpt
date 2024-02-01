@@ -162,7 +162,7 @@ async def execute_tasks_with_progressbar(tasks, _desc, _unit):
         await task_execution
     
 
-@retry(wait=wait_random_exponential(min=1, max=90), stop=stop_after_attempt(22), reraise=True)
+@retry(wait=wait_random_exponential(min=1, max=200), stop=stop_after_attempt(24), reraise=True)
 async def chat_completion(messages):
     try:
         response = await openai.ChatCompletion.acreate(
