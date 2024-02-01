@@ -49,8 +49,8 @@ def run_qodana(abs_path: Path, linter: str):
     process = subprocess.Popen(
         ['qodana', 'scan', 
          '-i', str(abs_path), 
-         '-l', linter,
-         '-e', f'QODANA_TOKEN={QODANA_TOKEN}'
+         '-e', f'QODANA_TOKEN={QODANA_TOKEN}',
+         f'-l={linter}'
         ],
         stdout=subprocess.PIPE,
         universal_newlines=True,
@@ -69,7 +69,7 @@ def check_folder(abs_path: Path):
         if not contains_file_with_extensions(abs_path, LINTERS[linter]['extensions']):
             continue
         
-        run_qodana(abs_path, linter)
+        run_qodana(abs_path, LINTERS[linter]['name'])
 
 
 def main():

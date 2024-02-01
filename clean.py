@@ -299,8 +299,8 @@ async def copy_preserved(copied_files):
         directory = copied_file.relative_to(INPUT_PATH).parent
         directory = OUTPUT_PATH / directory 
 
-        if not dir.exists():
-            dir.mkdir(parents=True)
+        if not directory.exists():
+            directory.mkdir(parents=True)
 
         await async_copy(copied_file, directory / copied_file.name)
     
@@ -311,8 +311,8 @@ async def copy_preserved(copied_files):
 
 async def write_file(cleaned_file, clean_code):
     directory = Path(OUTPUT_PATH) / cleaned_file.dirname
-    if not dir.exists():
-        dir.mkdir(parents=True)
+    if not directory.exists():
+        directory.mkdir(parents=True)
         
     full_path = Path(directory / cleaned_file.filename)
     if full_path.exists() and ARGS['conflict_strategy'] in ('d', 'duplicate'):
