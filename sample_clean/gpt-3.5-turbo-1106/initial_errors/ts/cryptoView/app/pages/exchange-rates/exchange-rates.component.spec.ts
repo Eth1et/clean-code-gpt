@@ -7,14 +7,15 @@ describe('ExchangeRatesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ExchangeRatesComponent ]
+      declarations: [ExchangeRatesComponent]
     }).compileComponents();
+
     fixture = TestBed.createComponent(ExchangeRatesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create component', () => {
+  it('should create', () => {
     expect(component).toBeTruthy();
   });
 });

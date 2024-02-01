@@ -1,5 +1,3 @@
-from __future__ import annotations
-from typing import Callable, Any, Tuple, List
 import copy
 import pygame
 from pygame.locals import USEREVENT
@@ -8,7 +6,9 @@ import space_invaders.config as config
 
 
 class Pickup(pygame.sprite.Sprite):
-    def __init__(self, action: Callable[..., Any], args: List[Any], image: pygame.Surface = None, image_file: str = "") -> None:
+    def __init__(self, action, args, image=None, image_file=""):
+        super().__init__()
+        
         if image is not None:
             self._image = image
         else:
@@ -18,58 +18,59 @@ class Pickup(pygame.sprite.Sprite):
         self._action = action
         self._args = args
 
-    def new_pickup(self) -> Pickup:
+    def new_pickup(self):
         return Pickup(action=self._action, args=self._args, image=copy.copy(self._image))
 
-    def move(self, vec: Tuple[int, int]) -> None:
-        self._rect.center = (self._rect.center[0] + vec[0], self._rect.center[1] + vec[1])
+    def move(self, vec):
+        self._rect.centerx += vec[0]
+        self._rect.centery += vec[1]
 
-    def render(self, window: pygame.Surface) -> None:
-        window.blit(self._image, (self._rect.center[0] - self._rect.width//2, self._rect.center[1] - self._rect.height//2))
+    def render(self, window):
+        window.blit(self._image, (self._rect.centerx - self._rect.width // 2, self._rect.centery - self._rect.height // 2))
 
     @property
-    def collider(self) -> pygame.Rect:
+    def collider(self):
         return self._rect
 
     @property
-    def image(self) -> pygame.Surface:
+    def image(self):
         return self._image
 
     @property
-    def position(self) -> Tuple[int, int]:
+    def position(self):
         return self._rect.center
 
     @position.setter
-    def position(self, vec: Tuple[int, int]) -> None:
+    def position(self, vec):
         self._rect.center = vec
 
     @property
-    def action(self) -> Callable[..., Any]:
+    def action(self):
         return self._action
 
     @property
-    def args(self) -> List[Any]:
+    def args(self):
         return self._args
 
     @staticmethod
-    def action_heal(entity: Any, amount: int) -> None:
+    def action_heal(entity, amount):
         entity.heal(amount)
 
     @staticmethod
-    def action_give_gun(entity: Any, gun: Any) -> None:
+    def action_give_gun(entity, gun):
         entity.add_ammo(gun.new_gun())
 
     @staticmethod
-    def action_give_life(entity: Any) -> None:
+    def action_give_life(entity):
         entity.add_life()
 
     @staticmethod
-    def action_fire_rate_boost(entity: Any, multiplier: float, duration: int) -> None:
+    def action_fire_rate_boost(entity, multiplier, duration):
         entity.set_fire_rate_multiplier(multiplier)
         pygame.time.set_timer(RESET_FIRE_RATE, duration)
 
     @staticmethod
-    def action_reset_fire_rate(entity: Any) -> None:
+    def action_reset_fire_rate(entity):
         entity.set_fire_rate_multiplier(1)
 
 
@@ -90,6 +91,7 @@ PICKUP_MEDIUM_HEAL = Pickup(
     image_file=config.get_path("Sprites", "medium_heal.png"),
     args=[10]
 )
+
 PICKUP_DEFAULT_GUN = Pickup(
     action=Pickup.action_give_gun,
     image_file=config.get_path("Sprites", "default_gun_pickup.png"),

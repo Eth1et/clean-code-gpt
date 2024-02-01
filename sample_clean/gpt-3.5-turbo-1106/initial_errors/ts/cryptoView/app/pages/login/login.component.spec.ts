@@ -7,7 +7,7 @@ describe('LoginComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [LoginComponent],
+      declarations: [ LoginComponent ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginComponent);
@@ -15,7 +15,7 @@ describe('LoginComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create an instance of LoginComponent', () => {
     expect(component).toBeTruthy();
   });
 });

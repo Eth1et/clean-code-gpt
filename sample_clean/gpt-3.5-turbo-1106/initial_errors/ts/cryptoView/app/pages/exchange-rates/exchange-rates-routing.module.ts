@@ -3,10 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { ExchangeRatesComponent } from './exchange-rates.component';
 
 const exchangeRatesRoutes: Routes = [
-  {
-    path: '',
-    component: ExchangeRatesComponent
-  }
+  { path: '', component: ExchangeRatesComponent }
 ];
 
 @NgModule({

@@ -1,13 +1,13 @@
 import { CustomCurrencyPipe } from './custom-currency.pipe';
 
 describe('CustomCurrencyPipe', () => {
-  let customCurrencyPipe: CustomCurrencyPipe;
+  let pipe: CustomCurrencyPipe;
 
   beforeEach(() => {
-    customCurrencyPipe = new CustomCurrencyPipe();
+    pipe = new CustomCurrencyPipe();
   });
 
   it('should create an instance', () => {
-    expect(customCurrencyPipe).toBeTruthy();
+    expect(pipe).toBeTruthy();
   });
 });

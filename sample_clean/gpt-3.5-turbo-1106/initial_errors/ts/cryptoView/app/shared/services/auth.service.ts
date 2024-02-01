@@ -6,21 +6,21 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 })
 export class AuthService {
 
-  constructor(private angularFireAuth: AngularFireAuth) {}
+  constructor(private auth: AngularFireAuth) {}
 
-  login(email: string, password: string): Promise<any> {
-    return this.angularFireAuth.signInWithEmailAndPassword(email, password);
+  async login(email: string, password: string): Promise<any> {
+    return this.auth.signInWithEmailAndPassword(email, password);
   }
 
-  signup(email: string, password: string): Promise<any> {
-    return this.angularFireAuth.createUserWithEmailAndPassword(email, password);
+  async signup(email: string, password: string): Promise<any> {
+    return this.auth.createUserWithEmailAndPassword(email, password);
   }
 
-  logout(): Promise<void> {
-    return this.angularFireAuth.signOut();
+  async logout(): Promise<void> {
+    return this.auth.signOut();
   }
 
-  isUserLoggedIn() {
-    return this.angularFireAuth.user;
+  getLoggedInUser() {
+    return this.auth.user;
   }
 }

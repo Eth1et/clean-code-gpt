@@ -1,5 +1,4 @@
 import { User } from "./User";
-import firebase from 'firebase';
 
 export interface Comment {
     forumId: number;

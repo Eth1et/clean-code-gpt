@@ -13,67 +13,28 @@
     </mat-card-header>
     <mat-divider></mat-divider>
     <mat-card-content>
-        <div *ngFor="let comment of comments" class="comments-container">
-
-            <ng-container *ngIf="!lastComment(comment)">
-                <mat-card *ngIf="comment.sender.username !== currentUser?.username" class="smooth-shadow-small comment">
-                    <!-- Comment Header -->
+        <ng-container *ngFor="let comment of comments">
+            <ng-container *ngIf="shouldDisplayComment(comment)">
+                <mat-card class="smooth-shadow-small" [ngClass]="{'comment': isOtherUserComment(comment), 'userComment': isCurrentUserComment(comment)}">
                     <mat-card-header class="comment-info">
                         <mat-card-title>{{comment.sender.username}}</mat-card-title>
                         <mat-card-subtitle>{{comment.sender.name.firstname +" "+ comment.sender.name.lastname}}</mat-card-subtitle>
                         <mat-card-subtitle class="time">{{comment.date.seconds | dateFormat}}</mat-card-subtitle>
                     </mat-card-header>
-                    <!-- Comment Content -->
                     <mat-card-content>
                         <div class="limit-message">
                             <p class="comment-message">{{comment.message}}</p>
                         </div>
                     </mat-card-content>
+                    <ng-container *ngIf="isCurrentUserComment(comment) && !lastComment(comment)">
+                        <div id="edit-div">
+                            <button (click)="deleteComment(comment)" id="delete-button" color="warn" mat-icon-button><mat-icon matSuffix color="warn">delete</mat-icon></button>
+                            <button (click)="editComment(comment)" color="accent" mat-icon-button><mat-icon matSuffix color="accent">edit</mat-icon></button>
+                        </div>
+                    </ng-container>
                 </mat-card>
             </ng-container>
-
-            <ng-container *ngIf="lastComment(comment)">
-                <ng-container *ngIf="comment.sender.username === currentUser?.username">
-                    <mat-card class="smooth-shadow-small userComment">
-                        <!-- User Comment Header -->
-                        <mat-card-header class="comment-info">
-                            <mat-card-title>{{comment.sender.username}}</mat-card-title>
-                            <mat-card-subtitle>{{comment.sender.name.firstname +" "+ comment.sender.name.lastname}}</mat-card-subtitle>
-                            <mat-card-subtitle class="time">{{comment.date.seconds | dateFormat}}</mat-card-subtitle>
-                        </mat-card-header>
-                        <!-- User Comment Content -->
-                        <mat-card-content>
-                            <div class="limit-message" *ngIf="!(editedComment)">
-                                <p class="comment-message">{{comment.message}}</p>
-                            </div>
-                            <div class="limit-message edited" *ngIf="editedComment">
-                                <p class="comment-message">{{comment.message}}</p>
-                            </div>
-                        </mat-card-content>
-                    </mat-card>
-                    <div id="edit-div">
-                        <button (click)="deleteComment(comment)" id="delete-button" color="warn" mat-icon-button><mat-icon matSuffix color="warn">delete</mat-icon></button>
-                        <button (click)="editComment(comment)" color="accent" mat-icon-button><mat-icon matSuffix color="accent">edit</mat-icon></button>
-                    </div>
-                </ng-container>
-                <ng-container *ngIf="comment.sender.username !== currentUser?.username">
-                    <mat-card class="smooth-shadow-small comment">
-                        <!-- Comment Header -->
-                        <mat-card-header class="comment-info">
-                            <mat-card-title>{{comment.sender.username}}</mat-card-title>
-                            <mat-card-subtitle>{{comment.sender.name.firstname +" "+ comment.sender.name.lastname}}</mat-card-subtitle>
-                            <mat-card-subtitle class="time">{{comment.date.seconds | dateFormat}}</mat-card-subtitle>
-                        </mat-card-header>
-                        <!-- Comment Content -->
-                        <mat-card-content>
-                            <div class="limit-message">
-                                <p class="comment-message">{{comment.message}}</p>
-                            </div>
-                        </mat-card-content>
-                    </mat-card>
-                </ng-container>
-            </ng-container>
-        </div>
+        </ng-container>
     </mat-card-content>
     <mat-divider></mat-divider>
     <mat-card-footer class="commnet-form-container">
@@ -84,5 +45,4 @@
         <button mat-icon-button id="send-button" (click)="addComment(messageInput)"><mat-icon color="accent">send</mat-icon></button>
     </mat-card-footer>
 </mat-card>
-
 <span id="bottom"></span>

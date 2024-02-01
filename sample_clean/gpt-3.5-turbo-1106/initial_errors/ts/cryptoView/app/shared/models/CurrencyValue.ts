@@ -1,5 +1,5 @@
 export interface CurrencyValue {
-  name: string;
-  abbreviation: string;
-  value: number;
+    name: string;
+    abbreviation: string;
+    value: number;
 }

@@ -1,6 +1,6 @@
-<mat-card class="main-card smooth-shadow-large">
+<mat-card class="smooth-shadow-large">
     <mat-card-header>
-        <div class="icon-container" fxFlex fxLayoutAlign="center center">
+        <div class="icon-container" fxLayout fxLayoutAlign="center center">
             <mat-icon color="accent">account_circle</mat-icon>
         </div>
     </mat-card-header>
@@ -11,7 +11,7 @@
                 <p>{{currentUser?.username}}</p>
                 <mat-divider></mat-divider>
                 <p>Name</p>
-                <p>{{getFullName(currentUser?.name)}}</p>
+                <p>{{getFullName(currentUser)}}</p>
                 <mat-divider></mat-divider>
                 <p>Email</p>
                 <p>{{currentUser?.email}}</p>

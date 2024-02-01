@@ -7,16 +7,19 @@ import { User } from '../models/User';
   providedIn: 'root'
 })
 export class AuthGuard implements CanActivate {
-  constructor(private router: Router) { }
+  constructor(private router: Router){
+
+  }
 
   canActivate(
     route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    const user: User = JSON.parse(localStorage.getItem('user') as string);
-    if (user) {
-      return true;
-    }
-    return this.router.parseUrl('login');
-  }  
+    state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+      const user: User = JSON.parse(localStorage.getItem('user') as string);
+      const isLoggedIn = !!user;
+      if(isLoggedIn){
+        return true;
+      }
+      return this.router.parseUrl('login');
+  }
+  
 }

@@ -1,63 +1,63 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { Comment } from 'src/app/shared/models/Comment';
 import { User } from 'src/app/shared/models/User';
 import { Forum } from 'src/app/shared/models/Forum';
+import { Subscription } from 'rxjs';
 import { ForumService } from 'src/app/shared/services/forum.service';
 import { FormControl, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Timestamp } from 'firebase/firestore';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-forum-thread',
   templateUrl: './forum-thread.component.html',
   styleUrls: ['./forum-thread.component.scss']
 })
-export class ForumThreadComponent implements OnInit, OnDestroy {
+export class ForumThreadComponent implements OnInit, OnDestroy, OnChanges {
   @Input() forum?: Forum;
   @Output() forumEmitter: EventEmitter<Forum> = new EventEmitter();
 
   currentUser?: User;
-  comments: Array<Comment> = [];
+  comments: Comment[] = [];
+  commentSubscription?: Subscription;
+  deleteSubscription?: Subscription;
+  editSubscription?: Subscription;
   editedComment?: Comment;
-
   comment = new FormControl('', [Validators.required]);
 
-  private commentSubscription: Subscription;
-  
   constructor(private forumService: ForumService, private snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
-    this.currentUser = JSON.parse(localStorage.getItem('user')) as User;
+    this.currentUser = JSON.parse(localStorage.getItem('user') || '{}') as User;
 
-    this.commentSubscription = this.forumService.readAllCommentsByForum(this.forum?.id as number).subscribe(
-      comments => {
+    this.commentSubscription = this.forumService.readAllCommentsByForum(this.forum?.id as number).subscribe({
+      next: (comments: Comment[]) => {
         this.comments = comments;
       },
-      error => {
+      error: (error: any) => {
         console.error(error);
       }
-    );
+    });
   }
 
   openSnackBar(message: string, action: string): void {
-    this.snackBar.open(message, action, {duration: 3000});
+    this.snackBar.open(message, action, { duration: 3000 });
   }
 
   lastComment(comment: Comment): boolean {
-    return this.comments.length > 0 && this.comments[this.comments.length - 1] === comment;
+    return this.comments.length > 0 && this.comments[this.comments.length - 1].id === comment.id;
   }
 
   deleteComment(comment: Comment): void {
-    this.forumService.delete(comment).subscribe(
-      _ => {
+    this.deleteSubscription = this.forumService.delete(comment).subscribe({
+      next: () => {
         this.openSnackBar('Comment deleted successfully!', 'close');
       },
-      error => {
+      error: (error: any) => {
         console.error(error);
         this.openSnackBar(error, 'close');
       }
-    );
+    });
   }
 
   editComment(comment: Comment): void {
@@ -78,40 +78,36 @@ export class ForumThreadComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const message = this.editedComment ? this.comment.value + '   <edited>' : this.comment.value;
-    const newComment: Comment = {
+    const newMessage = this.editedComment ? this.comment.value + ' <edited>' : this.comment.value;
+    const comment: Comment = {
       forumId: this.forum?.id as number,
       sender: this.currentUser as User,
       date: Timestamp.fromDate(new Date()),
-      message: message
+      message: newMessage
     };
 
     if (this.editedComment) {
-      this.forumService.update(this.editedComment, newComment).subscribe(
-        _ => {
+      this.forumService.update(this.editedComment, comment).subscribe({
+        next: () => {
           this.openSnackBar('Comment edited successfully!', 'close');
           input.value = '';
           this.goToBottom();
           this.editedComment = undefined;
         },
-        error => {
+        error: (error: any) => {
           console.error(error);
           this.openSnackBar(error, 'close');
         }
-      );
+      });
     } else {
-      this.forumService.add(newComment).then(
-        _ => {
-          this.openSnackBar('Comment added successfully!', 'close');
-          input.value = '';
-          this.goToBottom();
-        }
-      ).catch(
-        error => {
-          console.error(error);
-          this.openSnackBar(error, 'close');
-        }
-      );
+      this.forumService.add(comment).then(() => {
+        this.openSnackBar('Comment added successfully!', 'close');
+        input.value = '';
+        this.goToBottom();
+      }).catch((error: any) => {
+        console.error(error);
+        this.openSnackBar(error, 'close');
+      });
     }
   }
 
@@ -125,7 +121,16 @@ export class ForumThreadComponent implements OnInit, OnDestroy {
     this.forumEmitter.emit(this.forum);
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.forum) {
+      this.forumEmitter.emit(this.forum);
+      this.goToBottom();
+    }
+  }
+
   ngOnDestroy(): void {
+    this.deleteSubscription?.unsubscribe();
     this.commentSubscription?.unsubscribe();
+    this.editSubscription?.unsubscribe();
   }
 }

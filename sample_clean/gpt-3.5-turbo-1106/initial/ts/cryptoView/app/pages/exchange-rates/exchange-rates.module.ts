@@ -9,7 +9,6 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
-
 import { ExchangeRatesRoutingModule } from './exchange-rates-routing.module';
 import { ExchangeRatesComponent } from './exchange-rates.component';
 import { CustomCurrencyPipe } from 'src/app/shared/pipes/custom-currency.pipe';

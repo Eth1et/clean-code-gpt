@@ -1,41 +1,28 @@
-function calculateVectorSum(points2D) {
-    let vectorSum = [0, 0];
-    for(let i = 0; i < points2D.length; i++) {
-        for(let j = 0; j < points2D[i].length; j++) {
-            vectorSum[j] += points2D[i][j];
-        }
-    }
-    return vectorSum;
-}
-
-function sumParameters(...params) {
+function calculateSum(inputArray) {
     let sum = 0;
-    for(let param of params) {
-        sum += param;
+    for (let i = 0; i < inputArray.length; i++) {
+        sum += inputArray[i];
     }
     return sum;
 }
 
-function calculateExpression_(operands, divisor) {
-    let modifiedOperands = [];
-    let sign = -1;
-    for(let i = 0; i < operands.length; i++){
-        if(i === operands.length - 1){
-            break;
-        } else {
-            let result = sign * (operands[i] + (i === 0 ? 1 : 0)); // I'm assuming that the first step is 1
-            modifiedOperands.push(result);
-            sign *= result < 0 ? -1 : 1;
+function calculateExpression(numbers, divisor) {
+    let transformedNumbers = numbers.map(num => Math.abs(num) * ((num < 0) ? -1 : 1));
+    let dividedNumbers = transformedNumbers.map(num => num / divisor);
+    return calculateSum(dividedNumbers);
+}
+
+calculateExpression([1, 4, -4, 2, -8, 2, 5], 1); // Output: -6
+
+function calculateCenterOfPoints(points2D) {
+    let dimensions = points2D[0].length;
+    let center = new Array(dimensions).fill(0);
+    for (let i = 0; i < points2D.length; i++) {
+        for (let j = 0; j < dimensions; j++) {
+            center[j] += points2D[i][j];
         }
     }
-    for(let i = 0; i < modifiedOperands.length; i++) {
-        modifiedOperands[i] /= divisor;
-    }
-    let sum = sumParameters(...modifiedOperands);
-    return sum;
+    return center;
 }
 
-/*
-Example usage:
-calculateExpression_([0,1,4,2,7,8], 1);
-*/
+calculateCenterOfPoints([[0, 1], [4, 2], [7, 8]]); // Output: [11, 11]

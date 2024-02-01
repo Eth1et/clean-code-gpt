@@ -9,7 +9,7 @@
   <mat-divider></mat-divider>
   <ng-container *ngIf="loggedInUser; else loggedOut">
     <a mat-list-item routerLink="/exchange-rates" (click)="close()">
-      <div class="nav-item" *ngIf="loggedInUser">
+      <div class="nav-item">
         <mat-icon>query_stats</mat-icon>
         <span>Exchange Rates</span>
       </div>
@@ -36,7 +36,6 @@
       </div>
     </a>
   </ng-container>
-
   <ng-template #loggedOut>
     <a mat-list-item routerLink="/login" (click)="close()">
       <div class="nav-item">

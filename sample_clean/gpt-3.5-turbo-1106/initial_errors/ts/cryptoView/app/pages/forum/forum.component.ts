@@ -9,9 +9,10 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./forum.component.scss']
 })
 export class ForumComponent implements OnInit, OnDestroy {
-  forums: Forum[] = [];
-  forumSubscription: Subscription;
-  selectedForum: Forum;
+
+  forums: Forum[] | undefined;
+  forumSubscription: Subscription | undefined;
+  selectedForum: Forum | undefined;
 
   constructor(private forumService: ForumService) {}
 
@@ -35,6 +36,6 @@ export class ForumComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.forumSubscription.unsubscribe();
+    this.forumSubscription?.unsubscribe();
   }
 }

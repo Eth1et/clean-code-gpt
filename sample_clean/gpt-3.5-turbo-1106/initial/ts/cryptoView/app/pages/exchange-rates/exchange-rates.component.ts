@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ExchangeRatesService } from 'src/app/shared/services/exchange-rates.service';
-import { Observable, Subscription, map, startWith } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 import { CryptoCurrency } from 'src/app/shared/models/CryptoCurrency';
 
 @Component({
@@ -9,43 +10,46 @@ import { CryptoCurrency } from 'src/app/shared/models/CryptoCurrency';
   templateUrl: './exchange-rates.component.html',
   styleUrls: ['./exchange-rates.component.scss']
 })
-export class ExchangeRatesComponent implements OnInit, OnDestroy{
+export class ExchangeRatesComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['name', 'value'];
   selected: CryptoCurrency = {
     name: 'Bitcoin',
     abbreviation: 'BTC',
-    values:[
+    values: [
       {
         name: 'US Dollar',
         abbreviation: 'USD',
         value: 29942.79
       }
     ]
-  }
+  };
   initialized = false;
-  
+
   selectedSubscription?: Subscription;
   optionsSubscription?: Subscription;
   searchSubscription?: Subscription;
 
   options: string[] = ['Bitcoin', 'Ethereum'];
   filteredOptions?: Observable<string[]>;
-
-  search =  new FormControl('');
+  search = new FormControl('');
 
   constructor(private exchangeRatesService: ExchangeRatesService) {}
 
-  ngOnInit(){
-    this.setDataByName(this.selected.name);
-    this.setupOptionsSubscription();
+  ngOnInit(): void {
+    this.initializeData();
+    this.initializeSubscriptions();
   }
 
-  private setupOptionsSubscription() {
+  private initializeData(): void {
+    this.setDataByName(this.selected.name);
+  }
+
+  private initializeSubscriptions(): void {
     this.optionsSubscription = this.exchangeRatesService.getCryptocurrencyNames().subscribe({
       next: queriedOptions => {
         this.options = queriedOptions;
-        this.setupSearchSubscription();
-        this.setupFilteredOptions();
+        this.handleSearchSubscription();
+        this.setFilteredOptions();
       },
       error: error => {
         console.error(error);
@@ -53,7 +57,8 @@ export class ExchangeRatesComponent implements OnInit, OnDestroy{
     });
   }
 
-  private setupSearchSubscription() {
+  private handleSearchSubscription(): void {
+    this.searchSubscription?.unsubscribe();
     this.searchSubscription = this.search.valueChanges.subscribe({
       next: searched => {
         this.setDataByName(searched as string);
@@ -64,26 +69,22 @@ export class ExchangeRatesComponent implements OnInit, OnDestroy{
     });
   }
 
-  private setupFilteredOptions() {
+  private setFilteredOptions(): void {
     this.filteredOptions = this.search.valueChanges.pipe(
       startWith(''),
-      map(name => {
-        return name ? this._filter(name) : this.options.slice();
-      }),
+      map(name => this.filterOptions(name))
     );
   }
 
-  private _filter(name: string): string[] {
+  private filterOptions(name: string): string[] {
     return this.options.filter(option => option.toLowerCase().includes(name.toLowerCase()));
   }
 
-  setDataByName(name: string){
+  setDataByName(name: string): void {
+    this.selectedSubscription?.unsubscribe();
     this.selectedSubscription = this.exchangeRatesService.readByName(name).subscribe({
       next: data => {
-        if(data.length > 0 && (!this.initialized || (this.options.indexOf(name) > -1 && name != this.selected.name))){
-          this.selected = data[0];
-          this.initialized = true;
-        }
+        this.updateSelected(data, name);
       },
       error: error => {
         console.error(error);
@@ -91,7 +92,18 @@ export class ExchangeRatesComponent implements OnInit, OnDestroy{
     });
   }
 
-  ngOnDestroy(){
+  private updateSelected(data: CryptoCurrency[], name: string): void {
+    if (data.length > 0 && (!this.initialized || (this.options.includes(name) && name !== this.selected.name))) {
+      this.selected = data[0];
+      this.initialized = true;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribeFromSubscriptions();
+  }
+
+  private unsubscribeFromSubscriptions(): void {
     this.selectedSubscription?.unsubscribe();
     this.optionsSubscription?.unsubscribe();
     this.searchSubscription?.unsubscribe();

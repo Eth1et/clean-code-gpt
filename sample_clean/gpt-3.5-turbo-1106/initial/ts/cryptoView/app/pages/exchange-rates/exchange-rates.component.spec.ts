@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+
 import { ExchangeRatesComponent } from './exchange-rates.component';
 
 describe('ExchangeRatesComponent', () => {

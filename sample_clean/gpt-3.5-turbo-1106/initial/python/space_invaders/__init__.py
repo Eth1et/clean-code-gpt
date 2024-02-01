@@ -1,1 +1,6 @@
-__all__ = ['entity', 'spaceship', 'pickup', 'config', 'level', 'main']
+from . import entity
+from . import spaceship
+from . import pickup
+from . import config
+from . import level
+from . import main

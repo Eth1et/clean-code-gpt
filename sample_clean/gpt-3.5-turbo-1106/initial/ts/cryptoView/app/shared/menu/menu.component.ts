@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, Input} from '@angular/core';
+import { Component, EventEmitter, Output, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { User } from '../models/User';
 
@@ -14,10 +14,18 @@ export class MenuComponent {
 
   constructor(private router: Router) {}
 
-  close(logout?: boolean): void {
-    this.onCloseSidenav.emit(true);
+  close(logout?: boolean) {
+    this.emitCloseSidenav();
     if (logout) {
-      this.onLogout.emit(true);
+      this.emitLogout();
     }
+  }
+
+  private emitCloseSidenav() {
+    this.onCloseSidenav.emit(true);
+  }
+
+  private emitLogout() {
+    this.onLogout.emit(true);
   }
 }

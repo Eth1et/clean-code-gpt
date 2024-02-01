@@ -1,83 +1,69 @@
 import pygame
 import os
 
-# Configuration file containing globally used constants and functions
+class Configuration:
+    def __init__(self):
+        self.PATH = os.path.dirname(os.path.abspath(__file__))
+        self.MUSICS = ()
+        self.score = 0
+        self.LAUNCH_GAME = False
+        self.SHOW_COLLIDERS = False
+        self.WINDOW_WIDTH = 1400
+        self.WINDOW_HEIGHT = 950
+        self.EXPLOSION_DURATION = 4
+        self.RESET_SWITCH_DELAY = 200
+        self.PICKUP_SPEED = 5
+        self.PICKUP_SPAWN_INTERVAL = (4, 8)
+        self.CAPTION = "Space Invaders"
+        self.BACKGROUND_IMAGE = self.get_path("Sprites", "background.png")
 
-# Get the absolute path based on where the project is installed
-PATH = os.path.dirname(os.path.abspath(__file__))
+    def get_path(self, *args):
+        return os.path.join(self.PATH, *args)
 
-def get_path(*args):
-    return os.path.join(PATH, *args)
+    def play_sound(self, sound_data, loops):
+        if sound_data in self.MUSICS:
+            pygame.mixer_music.load(sound_data[0], "muzsika")
+            pygame.mixer_music.set_volume(sound_data[1])
+            pygame.mixer_music.fadeout(sound_data[2])
+            pygame.mixer_music.play(loops=loops)
+            return
 
-# Define sound and music data
-SOUND_MAIN_THEME_DATA = (get_path("Sounds", "340452__zagi2__dondolan2-loop.wav"), 0.5, 0)
-SOUND_CREDITS_DATA = (get_path("Sounds", "353775__samueloak89__next-scene.mp3"), 0.7, 0)
+        sound = pygame.mixer.Sound(sound_data[0])
+        sound.set_volume(sound_data[1])
+        sound.fadeout(sound_data[2])
+        for i in range(pygame.mixer.get_num_channels()):
+            if not pygame.mixer.Channel(i).get_busy():
+                pygame.mixer.Channel(i).play(sound, loops=loops)
+                break
 
-MUSICS = (SOUND_MAIN_THEME_DATA, SOUND_CREDITS_DATA)
-
-# Play sound or music based on the given data 
-def play_sound(sound_data, loops):
-    if sound_data in MUSICS:
-        pygame.mixer_music.load(sound_data[0])
-        pygame.mixer_music.set_volume(sound_data[1])
-        pygame.mixer_music.fadeout(sound_data[2])
-        pygame.mixer_music.play(loops=loops)
-        return
-
-    sound = pygame.mixer.Sound(sound_data[0])
-    sound.set_volume(sound_data[1])
-    sound.fadeout(sound_data[2])
-    for i in range(pygame.mixer.get_num_channels()):
-        if not pygame.mixer.Channel(i).get_busy():
-            pygame.mixer.Channel(i).play(sound, loops=loops)
-            break
-
-
-# Define font data
-def get_font_data(font_name, font_size):
-    return (get_path("Fonts", font_name), font_size)
-
-FONT_CREDITS_TITLE_DATA = get_font_data("AGENCYB.TTF", 35)
-FONT_CREDITS_TEXT_DATA = get_font_data("AGENCYR.TTF", 27)
-FONT152_DATA = get_font_data("Alien Invader.ttf", 152)
-FONT86_DATA = get_font_data("Alien Invader.ttf", 86)
-FONT36_DATA = get_font_data("Alien Invader.ttf", 36)
-FONT25_DATA = get_font_data("Alien Invader.ttf", 25)
-FONT15_DATA = get_font_data("Alien Invader.ttf", 15)
-
-# Define other constants
-EXPLOSION_DURATION = 4
-RESET_SWITCH_DELAY = 200
-PICKUP_SPEED = 5
-PICKUP_SPAWN_INTERVAL = (4, 8)
-score = 0
-LAUNCH_GAME = False
-SHOW_COLLIDERS = False
-WINDOW_WIDTH = 1400
-WINDOW_HEIGHT = 950
-CAPTION = "Space Invaders"
-BACKGROUND_IMAGE = get_path("Sprites", "background.png")
-
-# Returns the credits string, with the updated score value
-def get_credits_text():
-    return f"""CONGRATULATIONS!
-YOU HAVE SUCCESSFULLY BEATEN THE GAME!
-FINAL SCORE:  {score}
-
-
-
-SOUNDS
-main-theme-song:   https://freesound.org/people/zagi2/sounds/340452/  -  zagi2
-credits-music:   https://freesound.org/people/samueloak89/sounds/353775/  -  samueloak89
-
-FONTS
-alienvader-font:   https://www.dafont.com/alien-invader.font  -  Darrell Flood
-agency-fb-font:  Builtin Windows Font  -  Bill Gates (I guess)
-
-ART
-Bódi Martin (Z9WTNS)
-
-PROGRAMMING
-Martin Bódi (h150714)
-\n\n\n\n\n
---------------~ THE END ~--------------"""
+    def get_credits_text(self):
+        return (f"CONGRATULATIONS!\n"
+                f"YOU HAVE SUCCESSFULLY BEATEN THE GAME!\n"
+                f"FINAL SCORE:  {self.score}\n"
+                f"\n"
+                f"\n"
+                f"SOUNDS\n"
+                f"main-theme-song:   https://freesound.org/people/zagi2/sounds/340452/  -  zagi2\n"
+                f"default-gun-sound:   https://freesound.org/people/flyingsaucerinvasion/sounds/615809/  -  flyingsaucerinvasion\n"
+                f"minigun-sound:   https://freesound.org/people/Halgrimm/sounds/156895/  -  Halgrimm\n"
+                f"rocket-sound:   https://freesound.org/people/inferno/sounds/18380/  -  inferno\n"
+                f"defeat-sound:   https://freesound.org/people/landlucky/sounds/277403/  -  landlucky\n"
+                f"win-sound:   https://freesound.org/people/jivatma07/sounds/122255/  -  jivatma07\n"
+                f"hit-positive-sound:   https://freesound.org/people/ArtemBasov/sounds/427409/  -  ArtemBasov\n"
+                f"hit-negative-sound:   https://freesound.org/people/strangehorizon/sounds/648200/  -  strangehorizon\n"
+                f"explosion-sound:   https://freesound.org/people/JakeGwizdak/sounds/565481/  -  JakeGwizdak\n"
+                f"pick-up-sound:   https://freesound.org/people/Jocabundus/sounds/678384/  -  Jocabundus\n"
+                f"credits-music:   https://freesound.org/people/samueloak89/sounds/353775/  -  samueloak89\n"
+                f"\n"
+                f"FONTS\n"
+                f"alien-invader-font:   https://www.dafont.com/alien-invader.font  -  Darrell Flood\n"
+                f"agency-fb-font:  Builtin Windows Font  -  Bill Gates (I guess)\n"
+                f"\n"
+                f"ART\n"
+                f"Bódi Martin (Z9WTNS)\n"
+                f"\n"
+                f"PROGRAMMING\n"
+                f"Martin Bódi (h150714)\n"
+                f"\n\n\n\n\n"
+                f"--------------~ THE END ~--------------"
+        )

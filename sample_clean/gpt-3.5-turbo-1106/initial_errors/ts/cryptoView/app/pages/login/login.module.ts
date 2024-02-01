@@ -1,11 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
-import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { LoginRoutingModule } from './login-routing.module';
 import { LoginComponent } from './login.component';
-import {
+import { 
   MatFormFieldModule,
   MatInputModule,
   MatButtonModule,
@@ -13,6 +11,8 @@ import {
   MatProgressSpinnerModule,
   MatSnackBarModule
 } from '@angular/material';
+import { ReactiveFormsModule } from '@angular/forms';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 @NgModule({
   declarations: [
@@ -23,12 +23,12 @@ import {
     LoginRoutingModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSnackBarModule,
     MatButtonModule,
     MatCardModule,
     ReactiveFormsModule,
     FlexLayoutModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatSnackBarModule
   ]
 })
 export class LoginModule { }

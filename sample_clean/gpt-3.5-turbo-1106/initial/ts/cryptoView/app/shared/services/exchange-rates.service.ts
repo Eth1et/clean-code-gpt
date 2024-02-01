@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore, CollectionReference, Query } from '@angular/fire/compat/firestore';
+import { AngularFirestore, QueryFn } from '@angular/fire/compat/firestore';
 import { CryptoCurrency } from '../models/CryptoCurrency';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -11,17 +11,16 @@ export class ExchangeRatesService {
 
   private readonly collectionName: string = 'CryptoCurrencies';
 
-  constructor(private afs: AngularFirestore) { }
+  constructor(private afs: AngularFirestore) {}
 
   readByName(name: string): Observable<CryptoCurrency[]> {
-    return this.afs.collection<CryptoCurrency>(this.collectionName, (ref: CollectionReference) => 
-      ref.where('name', '==', name).limit(1)
-    ).valueChanges();
+    const query: QueryFn = ref => ref.where('name', '==', name).limit(1);
+    return this.afs.collection<CryptoCurrency>(this.collectionName, query).valueChanges();
   }
 
   getCryptocurrencyNames(): Observable<string[]> {
     return this.afs.collection<CryptoCurrency>(this.collectionName).valueChanges().pipe(
-      map((docs: CryptoCurrency[]) => docs.map((doc: CryptoCurrency) => doc.name))
+      map(cryptoCurrencies => cryptoCurrencies.map(cc => cc.name))
     );
   }
 

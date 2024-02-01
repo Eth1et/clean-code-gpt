@@ -14,7 +14,13 @@ export class ExchangeRatesComponent implements OnInit, OnDestroy {
   selected: CryptoCurrency = {
     name: 'Bitcoin',
     abbreviation: 'BTC',
-    values: [{ name: 'US Dollar', abbreviation: 'USD', value: 29942.79 }]
+    values:[
+      {
+        name: 'US Dollar',
+        abbreviation: 'USD',
+        value: 29942.79
+      }
+    ]
   };
   initialized = false;
   
@@ -24,64 +30,70 @@ export class ExchangeRatesComponent implements OnInit, OnDestroy {
 
   options: string[] = ['Bitcoin', 'Ethereum'];
   filteredOptions?: Observable<string[]>;
-  search = new FormControl('');
+
+  search =  new FormControl('');
 
   constructor(private exchangeRatesService: ExchangeRatesService) {}
 
-  ngOnInit() {
-    this.loadCryptocurrencyData(this.selected.name);
-    this.subscribeToCryptocurrencyNames();
+  ngOnInit(){
+    this.setDataByName(this.selected.name);
+    this.setupOptionsSubscription();
   }
 
-  private subscribeToCryptocurrencyNames() {
-    this.optionsSubscription = this.exchangeRatesService.getCryptocurrencyNames()
-      .subscribe({
-        next: queriedOptions => {
-          this.options = queriedOptions;
-          this.initSearchSubscription();
-        },
-        error: error => console.error(error)
-      });
+  private setupOptionsSubscription() {
+    this.optionsSubscription = this.exchangeRatesService.getCryptocurrencyNames().subscribe({
+      next: queriedOptions => {
+        this.options = queriedOptions;
+        this.setupSearchSubscription();
+        this.setupFilteredOptions();
+      },
+      error: error => {
+        console.error(error);
+      }
+    });
   }
 
-  private initSearchSubscription() {
-    this.searchSubscription = this.search.valueChanges
-      .subscribe({
-        next: searched => this.loadCryptocurrencyData(searched as string),
-        error: error => console.error(error)
-      });
+  private setupSearchSubscription() {
+    this.searchSubscription?.unsubscribe();
+    this.searchSubscription = this.search.valueChanges.subscribe({
+      next: searched => {
+        this.setDataByName(searched as string);
+      },
+      error: error => {
+        console.error(error);
+      }
+    });
+  }
 
-    this.filteredOptions = this.search.valueChanges
-      .pipe(
-        startWith(''),
-        map(name => name ? this.filterOptions(name) : this.options.slice())
-      );
+  private setupFilteredOptions() {
+    this.filteredOptions = this.search.valueChanges.pipe(
+      startWith(''),
+      map(name => {
+        return name ? this.filterOptions(name) : this.options.slice();
+      }),
+    );
   }
 
   private filterOptions(name: string): string[] {
     return this.options.filter(option => option.toLowerCase().includes(name.toLowerCase()));
   }
 
-  private loadCryptocurrencyData(name: string) {
-    this.selectedSubscription = this.exchangeRatesService.readByName(name)
-      .subscribe({
-        next: data => this.updateSelectedData(data, name),
-        error: error => console.error(error)
-      });
+  private setDataByName(name: string){
+    this.selectedSubscription?.unsubscribe();
+    this.selectedSubscription = this.exchangeRatesService.readByName(name).subscribe({
+      next: data => {
+        if(data.length > 0 && (!this.initialized || (this.options.indexOf(name) > -1 && name != this.selected.name))){
+          this.selected = data[0];
+          this.initialized = true;
+        }
+      },
+      error: error => {
+        console.error(error);
+      }
+    });
   }
 
-  private updateSelectedData(data: CryptoCurrency[], name: string) {
-    if (data.length > 0 && (!this.initialized || (this.options.indexOf(name) > -1 && name !== this.selected.name))) {
-      this.selected = data[0];
-      this.initialized = true;
-    }
-  }
-
-  ngOnDestroy() {
-    this.unsubscribeFromSubscriptions();
-  }
-
-  private unsubscribeFromSubscriptions() {
+  ngOnDestroy(){
     this.selectedSubscription?.unsubscribe();
     this.optionsSubscription?.unsubscribe();
     this.searchSubscription?.unsubscribe();

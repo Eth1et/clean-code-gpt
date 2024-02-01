@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
 import { Forum } from 'src/app/shared/models/Forum';
 import { ForumService } from 'src/app/shared/services/forum.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-forum',
@@ -9,21 +9,23 @@ import { ForumService } from 'src/app/shared/services/forum.service';
   styleUrls: ['./forum.component.scss']
 })
 export class ForumComponent implements OnInit, OnDestroy {
+
   forums: Forum[] = [];
-  selectedForum: Forum | undefined;
-  forumSubscription: Subscription | undefined;
+  forumSubscription: Subscription;
+  selectedForum: Forum;
 
   constructor(private forumService: ForumService) {}
 
   ngOnInit(): void {
-    this.forumSubscription = this.forumService.readAll().subscribe({
-      next: (forums: Forum[]) => {
-        this.forums = forums;
-      },
-      error: (error: any) => {
-        console.error(error);
-      }
-    });
+    this.forumSubscription = this.forumService.readAll()
+      .subscribe({
+        next: (forums: Forum[]) => {
+          this.forums = forums;
+        },
+        error: (error: any) => {
+          console.error(error);
+        }
+      });
   }
 
   emittedForum(forum: Forum): void {

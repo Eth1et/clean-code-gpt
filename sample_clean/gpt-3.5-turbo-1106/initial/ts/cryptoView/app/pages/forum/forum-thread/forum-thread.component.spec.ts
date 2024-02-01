@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+
 import { ForumThreadComponent } from './forum-thread.component';
 
 describe('ForumThreadComponent', () => {

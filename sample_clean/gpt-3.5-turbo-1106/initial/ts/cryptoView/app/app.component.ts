@@ -14,13 +14,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 })
 export class AppComponent implements OnInit, OnDestroy{
   
-  loggedInUser: User | null;
-  userLoggedInSubscription: Subscription;
+  loggedInUser: User | null | undefined;
+  userLoggedInSubscription: Subscription | undefined;
 
   constructor(
-    private router: Router, 
-    private authService: AuthService, 
-    private userService: UserService, 
+    private router: Router,
+    private authService: AuthService,
+    private userService: UserService,
     private snackBar: MatSnackBar
   ){}
 
@@ -29,7 +29,7 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   onClose(event: any, sidenav: MatSidenav): void {
-    if (event) {
+    if (event === true){
       sidenav.close();
     }
   }
@@ -39,7 +39,7 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   logout(): void {
-    this.authService.logout().then(() => {
+    this.authService.logout().then(() =>{
       console.log("Logged out successfully!");
 
       localStorage.setItem('user', JSON.stringify(null));
@@ -47,38 +47,38 @@ export class AppComponent implements OnInit, OnDestroy{
       this.openSnackBar('Logged out successfully!', 'close');
     }).catch(err => {
       console.error(err);
+    }).finally(() => {
     });
   }
 
   ngOnInit(): void {
-    this.userLoggedInSubscription = this.authService.isUserLoggedIn().subscribe({
-      next: (user: User) => {
-        this.userService.readById(user?.uid as string).subscribe({
+    this.userLoggedInSubscription =  this.authService.isUserLoggedIn().subscribe({
+      next: user => {
+        localStorage.setItem('user', JSON.stringify(user));
+        this.getUserSubscription = this.userService.readById(user?.uid as string).subscribe({
           next: snapshot => {
-            if (snapshot?.data()) {
+            if(snapshot.data()){
               this.loggedInUser = snapshot.data();
               localStorage.setItem('user', JSON.stringify(snapshot.data()));
             } else {
               localStorage.setItem('user', JSON.stringify(null));
-              this.loggedInUser = null;
             }
           },
           error: error => {
             console.error(error);
             localStorage.setItem('user', JSON.stringify(null));
-            this.loggedInUser = null;
           }
         });
-      }, 
+      },
       error: error =>{
         console.error(error);
         localStorage.setItem('user', JSON.stringify(null));
-        this.loggedInUser = null;
       }
     });
   }
 
   ngOnDestroy(): void {
     this.userLoggedInSubscription?.unsubscribe();
+    this.getUserSubscription?.unsubscribe();
   }
 }

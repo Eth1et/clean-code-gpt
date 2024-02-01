@@ -7,18 +7,14 @@ import { User } from 'src/app/shared/models/User';
   styleUrls: ['./profile.component.scss']
 })
 export class ProfileComponent implements OnInit {
-  currentUser: User | undefined;
+  currentUser: User | null = null;
 
   constructor() {}
 
   ngOnInit(): void {
-    this.loadCurrentUser();
-  }
-
-  private loadCurrentUser(): void {
-    const user = localStorage.getItem('user');
-    if (user) {
-      this.currentUser = JSON.parse(user);
+    const userString = localStorage.getItem('user');
+    if (userString) {
+      this.currentUser = JSON.parse(userString);
     }
   }
 }

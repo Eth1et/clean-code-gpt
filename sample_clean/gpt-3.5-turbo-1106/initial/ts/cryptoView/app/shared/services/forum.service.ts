@@ -1,61 +1,54 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore, CollectionReference } from '@angular/fire/compat/firestore';
+import { AngularFirestore, AngularFirestoreCollection, QueryFn } from '@angular/fire/compat/firestore';
 import { Forum } from '../models/Forum';
 import { Observable } from 'rxjs';
 import { Comment } from '../models/Comment';
-import { QueryFn } from '@angular/fire/compat/firestore/interfaces';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ForumService {
   
-  private readonly forumCollectionName: string = 'Forums';
-  private readonly commentCollectionName: string = 'Comments';
-
-  constructor(private afs: AngularFirestore) { }
-
-  getForums(): Observable<Forum[]> {
-    return this.afs.collection<Forum>(this.forumCollectionName).valueChanges();
+  private forumCollection: AngularFirestoreCollection<Forum>;
+  private commentCollection: AngularFirestoreCollection<Comment>;
+  
+  constructor(private afs: AngularFirestore) {
+    this.forumCollection = afs.collection<Forum>('Forums');
+    this.commentCollection = afs.collection<Comment>('Comments');
   }
 
-  getCommentsByForumId(forumId: number): Observable<Comment[]> {
-    return this.afs.collection<Comment>(this.commentCollectionName, ref => this.queryCommentsByForumId(ref, forumId)).valueChanges();
+  readAll(): Observable<Forum[]> {
+    return this.forumCollection.valueChanges();
   }
 
-  private queryCommentsByForumId(ref: CollectionReference, forumId: number): QueryFn {
-    return ref.where('forumId','==', forumId).orderBy('date', 'asc').limit(25);
+  readAllCommentsByForum(forumId: number): Observable<Comment[]> {
+    return this.commentCollection.ref.where('forumId', '==', forumId)
+      .orderBy('date', 'asc').limit(25).valueChanges();
   }
 
-  addComment(comment: Comment): Promise<void> {
-    return this.afs.collection<Comment>(this.commentCollectionName).add(comment);
+  add(comment: Comment): Promise<any> {
+    return this.commentCollection.add(comment);
   }
 
-  deleteComment(comment: Comment): void {
-    this.afs.collection<Comment>(this.commentCollectionName, ref => this.queryCommentToDelete(ref, comment)).get().pipe(
-      map(snapshot => {
-        snapshot.forEach(doc => {
-          doc.ref.delete();
-        });
-      })
-    ).subscribe();
+  delete(comment: Comment): Observable<void> {
+    return this.commentCollection.ref.where('forumId', '==', comment.forumId)
+      .where('date', '==', comment.date).limit(1)
+      .get()
+      .pipe(
+        switchMap(snapshot => {
+          return snapshot.docs[0]?.ref.delete() || Promise.resolve();
+        })
+      );
   }
 
-  private queryCommentToDelete(ref: CollectionReference, comment: Comment): QueryFn {
-    return ref.where('forumId','==', comment.forumId).where('date','==', comment.date).limit(1);
-  }
-
-  updateComment(oldComment: Comment, newComment: Comment): void {
-    this.afs.collection<Comment>(this.commentCollectionName, ref => this.queryCommentToUpdate(ref, oldComment)).get().pipe(
-      map(snapshot => {
-        snapshot.forEach(doc => {
-          doc.ref.set(newComment);
-        });
-      })
-    ).subscribe();
-  }
-
-  private queryCommentToUpdate(ref: CollectionReference, oldComment: Comment): QueryFn {
-    return ref.where('forumId','==', oldComment.forumId).where('date','==', oldComment.date).limit(1);
+  update(oldComment: Comment, newComment: Comment): Observable<void> {
+    return this.commentCollection.ref.where('forumId', '==', oldComment.forumId)
+      .where('date', '==', oldComment.date).limit(1)
+      .get()
+      .pipe(
+        switchMap(snapshot => {
+          return snapshot.docs[0]?.ref.set(newComment) || Promise.resolve();
+        })
+      );
   }
 }

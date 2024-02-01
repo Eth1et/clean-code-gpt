@@ -20,7 +20,7 @@ export class AuthService {
     return this.auth.signOut();
   }
 
-  isUserLoggedIn() {
+  isUserLoggedIn(): any {
     return this.auth.user;
   }
 }

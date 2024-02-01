@@ -1,12 +1,5 @@
 <mat-nav-list class="no-select">
     <mat-divider></mat-divider>
-    <a mat-list-item routerLink="/main" (click)="close()">
-        <div class="nav-item">
-            <mat-icon>home</mat-icon>
-            <span>Main</span>
-        </div>
-    </a>
-    <mat-divider></mat-divider>
     <ng-container *ngIf="loggedInUser; else notLoggedIn">
         <a mat-list-item routerLink="/exchange-rates" (click)="close()">
             <div class="nav-item">

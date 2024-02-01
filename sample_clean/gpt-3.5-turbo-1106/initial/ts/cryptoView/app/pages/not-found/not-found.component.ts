@@ -6,5 +6,5 @@ import { Component } from '@angular/core';
   styleUrls: ['./not-found.component.scss']
 })
 export class NotFoundComponent {
-  // This component is intentionally left blank as it is used to handle 'Not Found' pages
+
 }

@@ -10,10 +10,10 @@ export class MainComponent implements OnInit {
   currentUser: User | null = null;
 
   ngOnInit(): void {
-    const userFromStorage = localStorage.getItem('user');
-    if (userFromStorage) {
-      this.currentUser = JSON.parse(userFromStorage);
-      console.log(this.currentUser, !this.currentUser);
+    const userFromLocalStorage = localStorage.getItem('user');
+    if (userFromLocalStorage) {
+      this.currentUser = JSON.parse(userFromLocalStorage);
     }
+    console.log(this.currentUser, !this.currentUser);
   }
 }

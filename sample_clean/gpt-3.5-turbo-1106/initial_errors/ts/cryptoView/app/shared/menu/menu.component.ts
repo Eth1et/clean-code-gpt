@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, Input } from '@angular/core';
+import { Component, EventEmitter, Output, Input} from '@angular/core';
 import { Router } from '@angular/router';
 import { User } from '../models/User';
 
@@ -14,7 +14,7 @@ export class MenuComponent {
 
   constructor(private router: Router) {}
 
-  close(logout?: boolean) {
+  close(logout = false): void {
     this.onCloseSidenav.emit(true);
     if (logout) {
       this.onLogout.emit(true);

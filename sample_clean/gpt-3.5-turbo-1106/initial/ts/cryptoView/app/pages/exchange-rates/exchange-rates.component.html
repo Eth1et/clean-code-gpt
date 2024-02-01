@@ -6,13 +6,7 @@
     <mat-card-subtitle>{{selected.values[0].value | currency}}</mat-card-subtitle>
     <mat-form-field appearance="fill" color="accent" class="search-form-field">
       <mat-label>Cryptocurrency Name</mat-label>
-      <input
-        type="text"
-        placeholder="Search for a cryptocurrency's name"
-        matInput
-        [matAutocomplete]="auto"
-        [formControl]="search"
-      />
+      <input type="text" placeholder="Search for a cryptocurrency's name" matInput [matAutocomplete]="auto" [formControl]="search">
       <mat-icon matSuffix>search</mat-icon>
       <mat-autocomplete #auto="matAutocomplete">
         <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
@@ -23,56 +17,35 @@
   </mat-card-header>
   <mat-divider></mat-divider>
   <mat-card-content>
-    <div class="table-group" fxHide.lt-lg>
-      <div class="half-table">
-        <table mat-table [dataSource]="selected.values.slice(0, selected.values.length/2)">
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Name</th>
-            <td mat-cell *matCellDef="let currency">{{currency.name}}</td>
-          </ng-container>
-          <ng-container matColumnDef="value">
-            <th mat-header-cell *matHeaderCellDef>Value</th>
-            <td mat-cell *matCellDef="let currency">
-              {{currency.value | customCurrency}}
-              <span class="abbrev">{{" " + currency.abbreviation}}</span>
-            </td>
-          </ng-container>
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
+    <ng-container *ngIf="selected.values">
+      <div class="table-group" fxHide.lt-lg>
+        <div *ngFor="let halfTable of ['firstHalf', 'secondHalf']" class="half-table">
+          <table mat-table [dataSource]="selected.values.slice((halfTable === 'firstHalf') ? 0 : selected.values.length/2)">
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Name</th>
+              <td mat-cell *matCellDef="let currency">{{currency.name}}</td>
+            </ng-container>
+            <ng-container matColumnDef="value">
+              <th mat-header-cell *matHeaderCellDef>Value</th>
+              <td mat-cell *matCellDef="let currency">{{currency.value | customCurrency}}<span class="abbrev">{{" " + currency.abbreviation}}</span></td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
       </div>
-      <div class="half-table">
-        <table mat-table [dataSource]="selected.values.slice(selected.values.length/2)">
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Name</th>
-            <td mat-cell *matCellDef="let currency">{{currency.name}}</td>
-          </ng-container>
-          <ng-container matColumnDef="value">
-            <th mat-header-cell *matHeaderCellDef>Value</th>
-            <td mat-cell *matCellDef="let currency">
-              {{currency.value | customCurrency}}
-              <span class="abbrev">{{" " + currency.abbreviation}}</span>
-            </td>
-          </ng-container>
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
-      </div>
-    </div>
-    <table mat-table [dataSource]="selected.values" fxHide.gt-md>
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Name</th>
-        <td mat-cell *matCellDef="let currency">{{currency.name}}</td>
-      </ng-container>
-      <ng-container matColumnDef="value">
-        <th mat-header-cell *matHeaderCellDef>Value</th>
-        <td mat-cell *matCellDef="let currency">
-          {{currency.value | customCurrency}}
-          <span class="abbrev">{{" " + currency.abbreviation}}</span>
-        </td>
-      </ng-container>
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
+      <table mat-table [dataSource]="selected.values" fxHide.gt-md>
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let currency">{{currency.name}}</td>
+        </ng-container>
+        <ng-container matColumnDef="value">
+          <th mat-header-cell *matHeaderCellDef>Value</th>
+          <td mat-cell *matCellDef="let currency">{{currency.value | customCurrency}}<span class="abbrev">{{" " + currency.abbreviation}}</span></td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </ng-container>
   </mat-card-content>
 </mat-card>

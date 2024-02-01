@@ -1,9 +1,8 @@
 import { User } from "./User";
-import { Timestamp } from "firebase/firestore";
 
 export interface Comment {
   forumId: number;
   sender: User;
-  date: Timestamp;
+  date: firebase.firestore.Timestamp;
   message: string;
 }

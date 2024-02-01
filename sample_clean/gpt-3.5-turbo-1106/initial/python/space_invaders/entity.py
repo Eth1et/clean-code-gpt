@@ -1,3 +1,7 @@
+import pygame
+from space_invaders.config import WINDOW_WIDTH, WINDOW_HEIGHT
+
+
 class Entity(pygame.sprite.Sprite):
     def __init__(self, ship, spawn_position, speed, lives=1, looks_down=True):
         super().__init__()
@@ -66,7 +70,7 @@ class Entity(pygame.sprite.Sprite):
 
     def add_life(self, amount=1):
         if self.alive():
-            self._lives += amount
+            self._lives = max(self._lives, self._lives + amount)
 
     def heal(self, amount):
         if self.alive() and amount > 0:
@@ -97,7 +101,7 @@ class Entity(pygame.sprite.Sprite):
         self._ship.move(vec)
 
     def die(self):
-        pass
+        del self
 
 
 class Enemy(Entity):
@@ -106,7 +110,7 @@ class Enemy(Entity):
         self._actions = actions
 
     def execute_next_action(self):
-        if self._actions:
+        if len(self._actions) > 0:
             action = self._actions[0]
             if action[0] == "shoot":
                 self.shoot()
@@ -116,4 +120,4 @@ class Enemy(Entity):
                 self.shoot()
                 self.move(action[1][0], clamp=False)
 
-            self._actions.pop(0)
+            self._actions.remove(action)

@@ -6,16 +6,20 @@ describe('MainComponent', () => {
   let fixture: ComponentFixture<MainComponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [ MainComponent ]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(MainComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    await configureTestingModule();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  async function configureTestingModule() {
+    await TestBed.configureTestingModule({
+      declarations: [MainComponent]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(MainComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }
 });

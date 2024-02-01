@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+
 import { ForumThreadComponent } from './forum-thread.component';
 
 describe('ForumThreadComponent', () => {
@@ -7,7 +8,7 @@ describe('ForumThreadComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ForumThreadComponent ]
+      declarations: [ForumThreadComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ForumThreadComponent);
@@ -15,7 +16,7 @@ describe('ForumThreadComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create component', () => {
     expect(component).toBeTruthy();
   });
 });

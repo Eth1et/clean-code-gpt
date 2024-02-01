@@ -12,14 +12,17 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit, OnDestroy{
-  loggedInUser?: User | null;
-  userLoggedInSubscription?: Subscription;
+export class AppComponent implements OnInit, OnDestroy {
+  loggedInUser: User | null | undefined;
+  userLoggedInSubscription: Subscription | undefined;
+  getUserSubscription: Subscription | undefined;
 
-  constructor(private router: Router,
-              private authService: AuthService,
-              private userService: UserService,
-              private snackBar: MatSnackBar) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private userService: UserService,
+    private snackBar: MatSnackBar
+  ) {}
 
   onToggleSidenav(sidenav: MatSidenav): void {
     sidenav.toggle();
@@ -35,62 +38,55 @@ export class AppComponent implements OnInit, OnDestroy{
     this.snackBar.open(message, action, { duration: 3000 });
   }
 
-  logout(): void {
-    this.authService.logout()
-      .then(() => {
-        console.log("Logged out successfully!");
-        localStorage.setItem('user', JSON.stringify(null));
-        this.loggedInUser = null;
-        this.openSnackBar('Logged out successfully!', 'close');
-      })
-      .catch(err => {
-        console.error(err);
-      })
-      .finally(() => {});
+  logout(_?: boolean): void {
+    this.authService.logout().then(() => {
+      console.log('Logged out successfully!');
+      localStorage.setItem('user', JSON.stringify(null));
+      this.loggedInUser = null;
+      this.openSnackBar('Logged out successfully!', 'close');
+    }).catch(err => {
+      console.error(err);
+    }).finally(() => {
+      // Perform any necessary cleanup
+    });
   }
 
   ngOnInit(): void {
-    this.userLoggedInSubscription =  this.authService.isUserLoggedIn()
-      .subscribe({
-        next: user => {
-          this.getUserData(user?.uid);
-        },
-        error: error => {
-          console.error(error);
-          this.handleUserNotFound();
-        }
-      });
+    this.userLoggedInSubscription = this.authService.isUserLoggedIn().subscribe({
+      next: user => {
+        this.updateUserData(user?.uid as string);
+      },
+      error: error => {
+        console.error(error);
+        this.updateLoggedInUser(null);
+      }
+    });
   }
 
-  private getUserData(uid: string | undefined): void {
-    if (uid) {
-      this.userLoggedInSubscription = this.userService.readById(uid)
-        .subscribe({
-          next: snapshot => {
-            this.handleUserDataSnapshot(snapshot);
-          },
-          error: error => {
-            console.error(error);
-            this.handleUserNotFound();
-          }
-        });
-    }
-  }
-
-  private handleUserDataSnapshot(snapshot: any): void {
-    if (snapshot.data()) {
-      this.loggedInUser = snapshot.data();
-      localStorage.setItem('user', JSON.stringify(snapshot.data()));
-    } else {
-      this.handleUserNotFound();
-    }
-  }
-
-  private handleUserNotFound(): void {
-    localStorage.setItem('user', JSON.stringify(null));
-  }
-
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.userLoggedInSubscription?.unsubscribe();
+    this.getUserSubscription?.unsubscribe();
+  }
+
+  private updateUserData(uid: string): void {
+    this.getUserSubscription = this.userService.readById(uid).subscribe({
+      next: snapshot => {
+        const userData = snapshot.data();
+        if (userData) {
+          this.updateLoggedInUser(userData);
+        } else {
+          this.updateLoggedInUser(null);
+        }
+      },
+      error: error => {
+        console.error(error);
+        this.updateLoggedInUser(null);
+      }
+    });
+  }
+
+  private updateLoggedInUser(user: User | null): void {
+    this.loggedInUser = user;
+    localStorage.setItem('user', JSON.stringify(user));
   }
 }

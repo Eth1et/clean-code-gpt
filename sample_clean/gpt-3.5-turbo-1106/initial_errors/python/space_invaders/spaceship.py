@@ -5,9 +5,9 @@ import space_invaders.config as config
 
 
 class Spaceship:
-    def __init__(self, gun, hp, collider, enemy, image="", image_file=""):
-        self._image = image if image else pygame.image.load(image_file)
-        self._guns = gun if isinstance(gun, list) else [gun]
+    def __init__(self, gun, hp, collider, enemy, image_file="", image=None):
+        self._image = image if image is not None else pygame.image.load(image_file)
+        self._guns = [gun] if not isinstance(gun, list) else gun
         self._active_gun = 0
         self._hp = hp
         self._image_rect = self._image.get_rect()
@@ -18,10 +18,8 @@ class Spaceship:
         self._projectiles = []
 
     def new_ship(self):
-        shp = Spaceship(
-            [gun.new_gun() for gun in self._guns], self._hp, list(vertex for vertex in self._collider),
-            self._enemy, image=copy.copy(self._image)
-        )
+        shp = Spaceship([gun.new_gun() for gun in self._guns], self._hp, list(vertex for vertex in self._collider),
+                        self._enemy, image=copy.copy(self._image))
         return shp
 
     def empty_projectiles(self):
@@ -39,22 +37,22 @@ class Spaceship:
 
     def set_position(self, vec):
         self._image_rect.center = vec
-        self._collider = [(vertex[0] + vec[0], vertex[1] + vec[1]) for vertex in self._collider_relative_vertices]
+        for i, vertex in enumerate(self._collider_relative_vertices):
+            self._collider[i] = (vertex[0] + vec[0],
+                                 vertex[1] + vec[1])
         for gun in self._guns:
             gun.set_position(vec)
 
     def move(self, vec):
         self._image_rect.move_ip(vec[0], vec[1])
-        self._collider = [
-            (self._image_rect.center[0] + vertex[0], self._image_rect.center[1] + vertex[1])
-            for vertex in self._collider_relative_vertices
-        ]
+        for i, vertex in enumerate(self._collider_relative_vertices):
+            self._collider[i] = (self._image_rect.center[0] + vertex[0],
+                                 self._image_rect.center[1] + vertex[1])
         for gun in self._guns:
             gun.move(vec)
 
     def next_gun(self):
-        self._active_gun += 1
-        self._active_gun %= len(self._guns)
+        self._active_gun = (self._active_gun + 1) % len(self._guns)
         self._guns[self._active_gun].set_position(self._image_rect.center)
 
     def shoot(self):
@@ -64,9 +62,13 @@ class Spaceship:
 
     def render(self, window, show_colliders):
         self._guns[self._active_gun].render(window)
-        window.blit(self._image, (self._image_rect.center[0] - self._image_rect.width // 2,
-                                  self._image_rect.center[1] - self._image_rect.height // 2))
+        window.blit(self._image, (self._image_rect.center[0] - self._image_rect.width//2,
+                                  self._image_rect.center[1] - self._image_rect.height//2))
         self.render_projectiles(window, show_colliders)
+        if show_colliders:
+            pygame.draw.rect(window, (255, 255, 0), self._image_rect, 1)
+            pygame.draw.circle(window, (255, 0, 0), self._image_rect.center, 3)
+            pygame.draw.polygon(window, (255, 0, 255), self._collider, 1)
 
     def check_projectile_hit(self, enemies):
         explosions = []
@@ -74,6 +76,7 @@ class Spaceship:
             hit_count = 0
             p_poly = Polygon([projectile.collider.topleft, projectile.collider.topright,
                               projectile.collider.bottomright, projectile.collider.bottomleft])
+
             for enemy in enemies:
                 enemy_poly = Polygon(enemy.collider)
                 if p_poly.intersects(enemy_poly):
@@ -90,7 +93,7 @@ class Spaceship:
         return explosions
 
     def check_projectiles(self):
-        for projectile in self._projectiles:
+        for projectile in list(self._projectiles):
             projectile.move_forward(self._enemy)
             if projectile.check_if_out():
                 self._projectiles.remove(projectile)
@@ -99,6 +102,10 @@ class Spaceship:
         self.check_projectiles()
         for projectile in self._projectiles:
             projectile.render(window)
+            if show_colliders:
+                pygame.draw.rect(window, (255, 255, 0), projectile.image_rect, 1)
+                pygame.draw.circle(window, (255, 0, 0), projectile.image_rect.center, 3)
+                pygame.draw.rect(window, (255, 0, 255), projectile.collider, 1)
 
     @property
     def guns(self):
@@ -132,7 +139,7 @@ class Spaceship:
 class Gun:
     def __init__(self, fire_rate, projectile, ammo, left_muzzle, right_muzzle, offset,
                  gun_type="default", image=None, image_file=""):
-        self._image = image if image else pygame.image.load(image_file)
+        self._image = image if image is not None else pygame.image.load(image_file)
         self._rect = self._image.get_rect()
         self._fire_rate = fire_rate
         self._projectile = projectile
@@ -144,10 +151,8 @@ class Gun:
         self._type = gun_type
 
     def new_gun(self):
-        return Gun(
-            self._fire_rate, self._projectile, self._ammo, self._left_muzzle, self._right_muzzle, self._offset,
-            image=copy.copy(self._image), gun_type=self._type
-        )
+        return Gun(self._fire_rate, self._projectile, self._ammo, self._left_muzzle, self._right_muzzle, self._offset,
+                   image=copy.copy(self._image), gun_type=self._type)
 
     def set_position(self, vec):
         self._rect.center = (vec[0] + self._offset[0], vec[1] + self._offset[1])
@@ -156,8 +161,8 @@ class Gun:
         self._rect.move_ip(vec[0], vec[1])
 
     def render(self, window):
-        window.blit(self._image, (self._rect.center[0] - self._rect.width // 2,
-                                  self._rect.center[1] - self._rect.height // 2))
+        window.blit(self._image, (self._rect.center[0] - self._rect.width//2,
+                                  self._rect.center[1] - self._rect.height//2))
 
     @property
     def image(self):
@@ -180,6 +185,7 @@ class Gun:
 
     def shoot(self, fire_rate_multiplier):
         current_time = pygame.time.get_ticks()
+
         if self._ammo != 0 and current_time - self._time_since_last_shot > self._fire_rate * fire_rate_multiplier:
             config.play_sound(get_sound_by_projectile(self._projectile), 0)
             projectile = self.spawn_projectile(self._left_muzzle if self._ammo % 2 == 0 else self._right_muzzle)
@@ -189,7 +195,8 @@ class Gun:
         return None
 
     def spawn_projectile(self, relative_position):
-        position = (self._rect.center[0] + relative_position[0], self._rect.center[1] + relative_position[1])
+        position = (self._rect.center[0] + relative_position[0],
+                    self._rect.center[1] + relative_position[1])
 
         new_projectile = self._projectile.new_projectile()
         new_projectile.set_position(position)
@@ -197,8 +204,8 @@ class Gun:
 
 
 class Projectile:
-    def __init__(self, collider, damage, speed, image="", image_file=""):
-        self._image = image if image else pygame.image.load(image_file)
+    def __init__(self, collider, damage, speed, image_file="", image=None):
+        self._image = image if image is not None else pygame.image.load(image_file)
         self._image_rect = self._image.get_rect()
         self._collider = collider
         self._damage = damage
@@ -209,9 +216,7 @@ class Projectile:
         self._image_rect.center = position
 
     def new_projectile(self):
-        return Projectile(
-            copy.copy(self._collider), self._damage, self._speed, image=copy.copy(self._image)
-        )
+        return Projectile(copy.copy(self._collider), self._damage, self._speed, image=copy.copy(self._image))
 
     @property
     def speed(self):
@@ -234,8 +239,8 @@ class Projectile:
         return self._collider
 
     def render(self, window):
-        window.blit(self._image, (self._image_rect.center[0] - self._image_rect.width // 2,
-                                  self._image_rect.center[1] - self._image_rect.height // 2))
+        window.blit(self._image, (self._image_rect.center[0] - self._image_rect.width//2,
+                                  self._image_rect.center[1] - self._image_rect.height//2))
 
     def move_forward(self, enemy):
         diff = self._speed if enemy else -self._speed
@@ -247,12 +252,12 @@ class Projectile:
 
 
 def get_sound_by_projectile(projectile):
+    global DEFAULT_PROJECTILE, DEFAULT_ENEMY_PROJECTILE, MINIGUN_PROJECTILE, ROCKET_PROJECTILE
     if projectile in (DEFAULT_PROJECTILE, DEFAULT_ENEMY_PROJECTILE):
         return config.SOUND_DEFAULT_GUN_DATA
     if projectile == MINIGUN_PROJECTILE:
         return config.SOUND_MINIGUN_DATA
     return config.SOUND_ROCKET_DATA
-
 
 DEFAULT_PROJECTILE = Projectile(
     pygame.Rect(0, 0, 30, 60), 2, 20, image_file=config.get_path("Sprites", "default_projectile.png")

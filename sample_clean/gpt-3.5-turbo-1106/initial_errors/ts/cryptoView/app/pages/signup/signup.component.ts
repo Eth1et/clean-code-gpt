@@ -14,7 +14,8 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./signup.component.scss']
 })
 export class SignupComponent implements OnDestroy {
-  loading: boolean = false;
+
+  loading = false;
   usernameReadSubscription?: Subscription;
 
   signUpForm = new FormGroup({
@@ -28,12 +29,7 @@ export class SignupComponent implements OnDestroy {
     })
   }, [passwordMatchValidator()]);
 
-  constructor(
-    private router: Router,
-    private authService: AuthService,
-    private userService: UserService,
-    private snackBar: MatSnackBar
-  ) {}
+  constructor(private router: Router, private authService: AuthService, private userService: UserService, private snackBar: MatSnackBar) { }
 
   openSnackBar(message: string, action: string) {
     this.snackBar.open(message, action, { duration: 6500 });
@@ -41,43 +37,32 @@ export class SignupComponent implements OnDestroy {
 
   onSubmit() {
     if (this.signUpForm.invalid) {
-      this.openSnackBar(
-        this.signUpForm.getError('passwordsNotEqual') ? 'Passwords do not match!' : 'Fill out all required fields!',
-        'close'
-      );
+      this.openSnackBar(this.signUpForm.getError("passwordsNotEqual") ? "Passwords do not match!" : "Fill out all required fields!", 'close');
       return;
     }
 
-    this.usernameReadSubscription = this.userService.readByUsername(this.signUpForm.value.username as string).subscribe({
-      next: users => {
-        if (users.length < 1) {
-          this.createUser();
-        } else {
-          console.error('The username is already in use!');
-          this.openSnackBar('The username is already in use', 'close');
-        }
-      },
-      error: error => {
-        console.error(error);
-        this.openSnackBar(error, 'close');
+    this.usernameReadSubscription = this.userService.readByUsername(this.signUpForm.value.username as string).subscribe(users => {
+      if (users.length < 1) {
+        this.createUser();
+      } else {
+        console.error("The username is already in use!");
+        this.openSnackBar("The username is already in use", "close");
       }
+    }, error => {
+      console.error(error);
+      this.openSnackBar(error, "close");
     });
   }
 
   createUser() {
     this.loading = true;
-    const email = this.signUpForm.get('email')?.value;
-    const password = this.signUpForm.get('password')?.value;
-
+    const { email, password, username, name: { firstname, lastname } } = this.signUpForm.value;
     this.authService.signup(email, password).then(cred => {
       const user: User = {
         id: cred.user?.uid as string,
-        email: email as string,
-        username: this.signUpForm.get('username')?.value as string,
-        name: {
-          firstname: this.signUpForm.get('name.firstname')?.value as string,
-          lastname: this.signUpForm.get('name.lastname')?.value as string
-        }
+        email: email,
+        username: username,
+        name: { firstname, lastname }
       };
 
       this.userService.create(user).then(_ => {

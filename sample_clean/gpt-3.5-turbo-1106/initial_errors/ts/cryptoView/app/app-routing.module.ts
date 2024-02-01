@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './shared/services/auth.guard';
 import { LoggedOutGuard } from './shared/services/logged-out.guard';
+import * as pages from './pages';
 
 const routes: Routes = [
   { path: 'main', loadChildren: () => import('./pages/main/main.module').then(m => m.MainModule) },
@@ -12,7 +13,7 @@ const routes: Routes = [
   { path: 'profile', canActivate: [AuthGuard], loadChildren: () => import('./pages/profile/profile.module').then(m => m.ProfileModule) },
   { path: 'not-found', loadChildren: () => import('./pages/not-found/not-found.module').then(m => m.NotFoundModule) },
   { path: '', redirectTo: '/main', pathMatch: 'full' },
-  { path: '**', redirectTo: '/not-found' }
+  { path: '**', redirectTo: '/not-found' },
 ];
 
 @NgModule({

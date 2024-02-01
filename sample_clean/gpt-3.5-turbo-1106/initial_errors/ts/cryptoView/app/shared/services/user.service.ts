@@ -1,44 +1,36 @@
-import { Injectable } from '@angular/core';
-import { User } from '../models/User';
-import { AngularFirestore, AngularFirestoreCollection, DocumentReference } from '@angular/fire/compat/firestore';
-import { Observable } from 'rxjs';
-
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private collectionName = 'Users';
-  private usersCollection: AngularFirestoreCollection<User>;
+  private readonly collectionName = 'Users';
 
-  constructor(private afs: AngularFirestore) {
-    this.usersCollection = this.afs.collection<User>(this.collectionName);
+  constructor(private firestore: AngularFirestore) {}
+
+  create(user: User) {
+    return this.firestore.collection<User>(this.collectionName).doc(user.id).set(user);
   }
 
-  create(user: User): Promise<void> {
-    return this.usersCollection.doc(user.id).set({ ...user });
+  readById(id: string) {
+    return this.firestore.collection<User>(this.collectionName).doc(id).get();
   }
 
-  readById(id: string): Observable<User | undefined> {
-    return this.usersCollection.doc(id).valueChanges();
+  readByUsername(username: string) {
+    return this.firestore.collection<User>(this.collectionName, ref => ref.where('username', '==', username).limit(1)).valueChanges();
   }
 
-  readByUsername(username: string): Observable<User[]> {
-    return this.afs.collection<User>(this.collectionName, ref => ref.where('username', '==', username).limit(1)).valueChanges();
+  readByEmail(email: string) {
+    return this.firestore.collection<User>(this.collectionName, ref => ref.where('email', '==', email).limit(1)).valueChanges();
   }
 
-  readByEmail(email: string): Observable<User[]> {
-    return this.afs.collection<User>(this.collectionName, ref => ref.where('email', '==', email).limit(1)).valueChanges();
+  readAll() {
+    return this.firestore.collection<User>(this.collectionName).valueChanges();
   }
 
-  readAll(): Observable<User[]> {
-    return this.usersCollection.valueChanges();
+  update(user: User) {
+    return this.firestore.collection<User>(this.collectionName).doc(user.id).set(user);
   }
 
-  update(user: User): Promise<void> {
-    return this.usersCollection.doc(user.id).update({ ...user });
-  }
-
-  delete(id: string): Promise<void> {
-    return this.usersCollection.doc(id).delete();
+  delete(id: string) {
+    return this.firestore.collection<User>(this.collectionName).doc(id).delete();
   }
 }

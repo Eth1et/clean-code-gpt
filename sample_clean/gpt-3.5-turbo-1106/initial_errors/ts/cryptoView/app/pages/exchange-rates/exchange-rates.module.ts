@@ -1,25 +1,20 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ExchangeRatesRoutingModule } from './exchange-rates-routing.module';
-import { 
-  MatCardModule,
-  MatAutocompleteModule,
-  MatTableModule,
-  MatDividerModule,
-  MatFormFieldModule,
-  MatInputModule,
-  MatIconModule
-} from '@angular/material';
-import { ExchangeRatesComponent } from './exchange-rates.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatTableModule } from '@angular/material/table';
+import { MatDividerModule } from '@angular/material/divider';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { ReactiveFormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { ExchangeRatesComponent } from './exchange-rates.component';
 import { CustomCurrencyPipe } from 'src/app/shared/pipes/custom-currency.pipe';
 
 @NgModule({
-  declarations: [
-    ExchangeRatesComponent,
-    CustomCurrencyPipe
-  ],
+  declarations: [ExchangeRatesComponent, CustomCurrencyPipe],
   imports: [
     CommonModule,
     ExchangeRatesRoutingModule,
