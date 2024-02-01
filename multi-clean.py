@@ -118,6 +118,8 @@ def main():
     model = MODELS[ARGS['model']]['name']
     
     for instruction, _ in INSTRUCTIONS.items():
+        print(f"Using Instruction: {instruction}")
+        
         target_folder = Path(Path(ARGS['out']) / model) / instruction
         
         if not target_folder.exists():
