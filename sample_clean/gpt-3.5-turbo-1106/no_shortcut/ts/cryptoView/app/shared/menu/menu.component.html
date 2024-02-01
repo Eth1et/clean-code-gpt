@@ -1,0 +1,55 @@
+<mat-nav-list class="no-select">
+    <mat-divider></mat-divider>
+    <a mat-list-item routerLink="/main" (click)="closeSidenav()">
+        <div class="nav-item">
+            <mat-icon>home</mat-icon>
+            <span>Main</span>
+        </div>
+    </a>
+    <mat-divider></mat-divider>
+    <ng-container *ngIf="loggedInUser; else showUnauthLinks">
+        <a mat-list-item routerLink="/exchange-rates" (click)="closeSidenav()">
+            <div class="nav-item">
+                <mat-icon>query_stats</mat-icon>
+                <span>Exchange Rates</span>
+            </div>
+        </a>
+        <mat-divider></mat-divider>
+        <a mat-list-item routerLink="/forum" (click)="closeSidenav()">
+            <div class="nav-item">
+                <mat-icon>forum</mat-icon>
+                <span>Forum</span>
+            </div>
+        </a>
+        <mat-divider></mat-divider>
+        <a mat-list-item routerLink="/profile" (click)="closeSidenav()">
+            <div class="nav-item">
+                <mat-icon>account_circle</mat-icon>
+                <span>Profile</span>
+            </div>
+        </a>
+        <mat-divider></mat-divider>
+        <a mat-list-item routerLink="/logout" (click)="logoutAndClose()">
+            <div class="nav-item">
+                <mat-icon>logout</mat-icon>
+                <span>Logout</span>
+            </div>
+        </a>
+    </ng-container>
+    <ng-template #showUnauthLinks>
+        <a mat-list-item routerLink="/login" (click)="closeSidenav()">
+            <div class="nav-item">
+                <mat-icon>login</mat-icon>
+                <span>Login</span>
+            </div>
+        </a>
+        <mat-divider></mat-divider>
+        <a mat-list-item routerLink="/signup" (click)="closeSidenav()">
+            <div class="nav-item">
+                <mat-icon>app_registration</mat-icon>
+                <span>Signup</span>
+            </div>
+        </a>
+    </ng-template>
+    <mat-divider></mat-divider>
+</mat-nav-list>

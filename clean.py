@@ -268,15 +268,16 @@ async def clean_file(file_path, encoding):
 async def clean_files(cleaned_files, copied_files):
     files = INPUT_PATH.glob('**/*') if INPUT_PATH.is_dir() else [INPUT_PATH]
     
-    async def task(entry):
+    async def task(entry: Path):      
         if entry.is_file():
             if entry.suffix.lower() in LANGUAGE_EXTENSIONS:
+                target_file = OUTPUT_PATH / entry.absolute().relative_to(INPUT_PATH)
                 
-                if not Path(OUTPUT_PATH / entry.name).exists() or ARGS['conflict_strategy'] not in ('s', 'skip'):
+                if not target_file.exists() or ARGS['conflict_strategy'] not in ('s', 'skip'):
                     cleaned_files.append(await clean_file(entry, ARGS['encoding']))
 
             elif ARGS['preserve']:
-                copied_files.append(entry)
+                copied_files.append(entry.absolute())
     
     tasks = [task(entry) for entry in files]
     await execute_tasks_with_progressbar(tasks, "Processing Files", "file")
@@ -360,6 +361,7 @@ async def main():
     ENCODER = tiktoken.encoding_for_model(MODEL['name'])
     INPUT_PATH = Path(ARGS['target']).absolute()
     OUTPUT_PATH = (INPUT_PATH.parent / 'clean_code') if ARGS['out'] is None else Path(ARGS['out'])
+    OUTPUT_PATH = OUTPUT_PATH.absolute()
     
     cleaned_files = []
     copied_files = []

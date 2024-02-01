@@ -1,0 +1,45 @@
+<button color="accent" id="back-button" matPrefix mat-icon-button (click)="navigateBack()">
+    <mat-icon class="nav-icon" color="accent">arrow_back</mat-icon>
+</button>
+<button color="primary" id="down-button" matPrefix mat-icon-button (click)="scrollToBottom()">
+    <mat-icon class="nav-icon" color="primary">keyboard_double_arrow_down</mat-icon>
+</button>
+
+<mat-card id="forum-card" class="card-large">
+    <mat-card-header fxFlex fxLayoutAlign="center center" fxLayoutGap="1vh">
+        <mat-card-title class="title">{{forum?.title}}</mat-card-title>
+        <mat-card-subtitle class="subtitle">{{forum?.subtitle}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+        <ng-container *ngFor="let comment of comments">
+            <ng-container *ngIf="showComment(comment)">
+                <mat-card class="comment-card" [ngClass]="{ 'smooth-shadow-small': !isUserComment(comment), 'user-comment': isUserComment(comment) }">
+                    <mat-card-header class="comment-info">
+                        <mat-card-title>{{comment.sender.username}}</mat-card-title>
+                        <mat-card-subtitle>{{comment.sender.name.firstname + ' ' + comment.sender.name.lastname}}</mat-card-subtitle>
+                        <mat-card-subtitle class="time">{{comment.date.seconds | dateFormat}}</mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div class="comment-message-container">
+                            <p class="comment-message">{{comment.message}}</p>
+                        </div>
+                    </mat-card-content>
+                    <mat-card-actions *ngIf="isUserComment(comment)">
+                        <button (click)="deleteComment(comment)" color="warn" mat-icon-button><mat-icon matSuffix color="warn">delete</mat-icon></button>
+                        <button (click)="editComment(comment)" color="accent" mat-icon-button><mat-icon matSuffix color="accent">edit</mat-icon></button>
+                    </mat-card-actions>
+                </mat-card>
+            </ng-container>
+        </ng-container>
+    </mat-card-content>
+    <mat-divider></mat-divider>
+    <mat-card-footer class="comment-form-container">
+            <mat-form-field id="comment-field" color="accent">
+                <mat-label for="message">Message</mat-label>
+                <textarea id="input-textarea" #messageInput matInput [formControl]="commentControl" type="text" placeholder="Type something here..." value=""></textarea>
+            </mat-form-field>
+            <button mat-icon-button id="send-button" (click)="submitComment(messageInput)"><mat-icon color="accent">send</mat-icon></button>
+    </mat-card-footer>
+</mat-card>
+<span id="bottomOfPage"></span>

@@ -1,0 +1,13 @@
+class="smooth-shadow-large" is renamed to "crypto-card" to enhance clarity and readability. 
+
+"class="table-group" is renamed to "crypto-table-group" for better understanding.
+
+The table headings "Name" and "Value" are extracted as constants for reusability with the names "NAME_COLUMN" and "VALUE_COLUMN" respectively.
+
+The currency abbreviation logic, which is displayed using the "span" tag, is moved to a separate method "getCurrencyAbbreviation" to improve readability and maintainability.
+
+The currency pipe "customCurrency" is extracted into a method "formatCurrency" to provide better understanding of the currency formatting logic.
+
+Each nested table for "half-table" is extracted to a separate component "crypto-table" for reusability and maintainability.
+
+The repeated boilerplate code used for defining "name" and "value" columns in each table is extracted into a separate method for reuse and better maintainability.
