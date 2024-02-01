@@ -1,3 +1,4 @@
 # exclude sensitive config data
-./configs/config.json
+configs/config.json
+configs/qodana_run_config.json
 .vscode
