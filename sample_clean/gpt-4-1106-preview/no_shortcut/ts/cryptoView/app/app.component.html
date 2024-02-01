@@ -1,0 +1,33 @@
+<mat-sidenav-container>
+  <mat-sidenav #drawer>
+    <app-menu (onCloseSidenav)="closeSidenav(drawer)" [user]="loggedInUser" (onLogout)="logout()"></app-menu>
+  </mat-sidenav>
+  <mat-sidenav-content> 
+    <mat-toolbar color="primary" class="no-select smooth-shadow-small" id="toolbar">
+      <button mat-icon-button fxHide.gt-md (click)="toggleDrawer(drawer)">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <a routerLink="/main" class="main-anchor" mat-flat-button>
+        <img alt="logo" class="toolbar-logo" src="assets/AppLogoOnly.png">
+        <h1 class="app-title">CryptoView</h1>
+      </a>
+      <div fxFlex fxLayoutAlign="flex-end center" fxHide.lt-lg class="navigation-wrapper">
+        <nav class="toolbar-nav">
+          <ul fxLayout fxLayoutGap="1.6vw">
+            <li *ngIf="loggedInUser">
+              <a mat-button routerLink="/exchange-rates">Exchange Rates</a>
+              <a mat-button routerLink="/forum">Forum</a>
+              <a mat-button routerLink="/profile">Profile</a>
+              <a mat-button routerLink="/login" (click)="logout()">Logout</a>
+            </li>
+            <li *ngIf="!loggedInUser">
+              <a mat-button routerLink="/login">Login</a>
+              <a mat-button routerLink="/signup">Signup</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </mat-toolbar>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,0 +1,24 @@
+<app-forum-thread 
+    *ngIf="selectedForum" 
+    [forum]="selectedForum" 
+    (forumEmitter)="handleForumEmission($event)">
+</app-forum-thread>
+
+<mat-card *ngIf="!selectedForum" id="main-card" class="smooth-shadow-large">
+    <mat-card-header fxFlex fxLayoutAlign="center center">
+        <mat-card-title id="title">Forums</mat-card-title>
+    </mat-card-header>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+        <div *ngFor="let forum of forums" class="forum-button-container smooth-shadow-small">
+            <button 
+                mat-stroked-button 
+                color="primary" 
+                class="forum-button" 
+                (click)="selectForum(forum)">
+                <p class="forum-title">{{ forum.title }}</p>
+                <p class="forum-subtitle">{{ forum.subtitle }}</p>
+            </button>
+        </div>
+    </mat-card-content>
+</mat-card>

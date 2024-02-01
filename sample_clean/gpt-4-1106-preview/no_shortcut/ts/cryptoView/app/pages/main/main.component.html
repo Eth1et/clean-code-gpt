@@ -1,0 +1,38 @@
+<div id="container"></div>
+
+<mat-card id="welcomeCard" class="smooth-shadow card-background-intro">
+    <mat-card-header class="card-header-center">
+        <mat-card-title>Welcome to Crypto View</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="card-content-center">
+        <img alt="Crypto View Logo" id="logoImage" src="assets/AppLogo.png">
+    </mat-card-content>
+</mat-card>
+
+<mat-card class="smooth-shadow card-background-track">
+    <mat-card-header>
+        <mat-card-title>Track Your Favorite Cryptocurrencies</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <p class="card-text">
+            Seamlessly monitor rates on any device.<br><br>
+            Stay current with market trends for informed decisions.<br><br>
+            Enjoy real-time updates for optimal trading opportunities.
+        </p>
+    </mat-card-content>
+</mat-card>
+
+<mat-card class="smooth-shadow card-background-community" *ngIf="!currentUser">
+    <mat-card-header>
+        <mat-card-title>Join Our Trusted Community</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <p class="card-text">
+            Connect and discuss all things crypto on our forum.<br><br>
+            Engage with leading experts in the field.<br><br>
+            <button mat-button routerLink="/signup" color="accent" class="signup-button">
+                <strong>Sign Up Now</strong>
+            </button>
+        </p>
+    </mat-card-content>
+</mat-card>
