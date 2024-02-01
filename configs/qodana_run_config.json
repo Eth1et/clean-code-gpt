@@ -1,5 +1,5 @@
 {
-    "qodana_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJvcmdhbml6YXRpb24iOiIzQnhXeCIsInByb2plY3QiOiJ6ODdXaiIsInRva2VuIjoiQVl4bWwifQ.gzbmvVkTarqJEHFBKFkGtME8zcmDpka0_Er_4ANvV9w",
+    "qodana_token": "",
     "linters": {
         "py": {
             "extensions": [".py", ".pyi", ".pyc", ".pyd", ".pyo", ".pyw", ".pyz"],
