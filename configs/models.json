@@ -1,4 +1,11 @@
 {
+    "gpt-4-0125-preview": {
+        "name": "gpt-4-0125-preview",
+        "max_tokens": 131072,
+        "input_price": 0.01,
+        "output_price": 0.03,
+        "description": ""
+    },
     "gpt-4-1106-preview": {
         "name": "gpt-4-1106-preview",
         "max_tokens": 131072,
@@ -20,12 +27,40 @@
         "output_price": 0.12,
         "description": "Same capabilities as the standard gpt-4 mode but with 4x the context length. Will be updated with our latest model iteration."
     },
+    "gpt-3.5-turbo-0125":{
+        "name": "gpt-3.5-turbo-0125",
+        "max_tokens": 16385,
+        "input_price": 0.0005,
+        "output_price": 0.0015,
+        "description": "Flagship model, optimized for dialog"
+    },
     "gpt-3.5-turbo-1106": {
         "name": "gpt-3.5-turbo-1106",
         "max_tokens": 16385,
         "input_price": 0.001,
         "output_price": 0.002,
-        "description": "Flagship model, optimized for dialog"
+        "description": "Used to be Flagship model, optimized for dialog"
+    },
+    "gpt-3.5-turbo-0613": {
+        "name": "gpt-3.5-turbo-0613",
+        "max_tokens": 4097,
+        "input_price": 0.0015,
+        "output_price": 0.002,
+        "description": "Older model"
+    },
+    "gpt-3.5-turbo-0613-16k": {
+        "name": "gpt-3.5-turbo-0613-16k",
+        "max_tokens": 16385,
+        "input_price": 0.003,
+        "output_price": 0.004,
+        "description": "Older model"
+    },
+    "gpt-3.5-turbo-0301": {
+        "name": "gpt-3.5-turbo-0301",
+        "max_tokens": 4097,
+        "input_price": 0.0015,
+        "output_price": 0.002,
+        "description": "Older model"
     },
     "gpt-3.5-turbo": {
         "name": "gpt-3.5-turbo",
